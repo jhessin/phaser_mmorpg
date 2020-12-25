@@ -23,7 +23,8 @@ export class Weapon extends Phaser.Physics.Arcade.Image {
     const { gold, attack } = mob;
     const { player } = manager;
     player.updateHealth(-attack);
-    mob.health -= this.damage;
+    // mob.health -= this.damage;
+    mob.updateHealth(mob.health - this.damage);
     if (mob.health <= 0) {
       player.gold += gold;
       // add bonus health to player

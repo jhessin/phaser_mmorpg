@@ -2,7 +2,7 @@ import 'phaser';
 import { keys, randomNumber } from '../models/utils';
 
 export class Mob extends Phaser.Physics.Arcade.Image {
-  health: number;
+  private _health: number;
 
   maxHealth: number;
 
@@ -19,7 +19,7 @@ export class Mob extends Phaser.Physics.Arcade.Image {
   constructor(scene: Phaser.Scene, x: number, y: number, health: number, attack: number) {
     super(scene, x, y, keys.MOBS, 0);
     this.scene = scene;
-    this.health = health;
+    this._health = health;
     this.maxHealth = health;
     this.attack = attack;
 
@@ -49,6 +49,24 @@ export class Mob extends Phaser.Physics.Arcade.Image {
     this.scene.add.existing(this);
   }
 
+  get health(): number {
+    return this._health;
+  }
+
+  set health(value: number) {
+    if (value >= this.maxHealth) {
+      this._health = this.maxHealth;
+    } else if (value <= 0) {
+      this._health = 0;
+    } else {
+      this._health = value;
+    }
+  }
+
+  updateHealth(value: number) {
+    this.health = value;
+  }
+
   drawHealthBar() {
     // Create a health bar
     if (!this.healthBar) {
@@ -59,7 +77,7 @@ export class Mob extends Phaser.Physics.Arcade.Image {
     this.healthBar.fillRect(this.x, this.y + 8, 64, 5);
     // this.healthBar.fillGradientStyle(0xFF0000, 0xFFFFFF, 0xFF0000, 0xFFFFFF);
     this.healthBar.fillStyle(0xFF0000, 1);
-    this.healthBar.fillRect(this.x, this.y + 8, 64 * (this.health / this.maxHealth), 5);
+    this.healthBar.fillRect(this.x, this.y + 8, 64 * (this._health / this.maxHealth), 5);
   }
 
   makeActive() {
@@ -69,7 +87,7 @@ export class Mob extends Phaser.Physics.Arcade.Image {
     this.setActive(true);
     this.setVisible(true);
     this.body.checkCollision.none = false;
-    this.health = this.maxHealth;
+    this._health = this.maxHealth;
     this.drawHealthBar();
   }
 

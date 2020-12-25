@@ -17,7 +17,7 @@ export class PlayerContainer extends Phaser.GameObjects.Container {
 
   playerAttacking: boolean;
 
-  health: number;
+  private _health: number;
 
   maxHealth: number;
 
@@ -49,8 +49,8 @@ export class PlayerContainer extends Phaser.GameObjects.Container {
     this.direction = Direction.RIGHT;
 
     // Player stats
-    this.health = 10;
-    this.maxHealth = this.health;
+    this._health = 10;
+    this.maxHealth = this._health;
     this.gold = 0;
 
     // set a size for the container
@@ -76,6 +76,20 @@ export class PlayerContainer extends Phaser.GameObjects.Container {
     this.drawHealthBar();
   }
 
+  get health(): number {
+    return this._health;
+  }
+
+  set health(value: number) {
+    if (value >= this.maxHealth) {
+      this._health = this.maxHealth;
+    } else if (value <= 0) {
+      this._health = 0;
+    } else {
+      this._health = value;
+    }
+  }
+
   faceRight(flag: boolean) {
     this.player.flipX = flag;
   }
@@ -94,18 +108,18 @@ export class PlayerContainer extends Phaser.GameObjects.Container {
     this.healthBar.fillRect(x, y, width, thickness);
     this.healthBar.fillGradientStyle(0x000FFF, 0xFF0000, 0x000FFF, 0xFF0000);
     // this.healthBar.fillStyle(0x0000FF, 1);
-    this.healthBar.fillRect(x, y, width * (this.health / this.maxHealth), thickness);
+    this.healthBar.fillRect(x, y, width * (this._health / this.maxHealth), thickness);
   }
 
   respawn() {
-    this.health = this.maxHealth;
+    this._health = this.maxHealth;
     this.scene.events.emit('respawnPlayer', this);
   }
 
   updateHealth(delta: number) {
-    this.health += delta;
-    if (this.health > this.maxHealth) {
-      this.health = this.maxHealth;
+    this._health += delta;
+    if (this._health > this.maxHealth) {
+      this._health = this.maxHealth;
     }
   }
 

@@ -13,7 +13,15 @@ export class UiButton extends Phaser.GameObjects.Container {
 
   buttonText: Phaser.GameObjects.Text;
 
-  constructor(scene: Phaser.Scene, x: number, y: number, key: string, hoverKey: string, text: string, targetCallback: () => void) {
+  constructor(
+    scene: Phaser.Scene,
+    x: number,
+    y: number,
+    key: string,
+    hoverKey: string,
+    text: string,
+    targetCallback: () => void,
+  ) {
     super(scene, x, y);
     // The scene the button belongs to.
     this.scene = scene;
