@@ -111,6 +111,54 @@ export class Mob extends Phaser.Physics.Arcade.Image {
     this.body.checkCollision.none = true;
     if (this.healthBar) this.healthBar.destroy();
   }
+
+  update() {
+    this.drawHealthBar();
+  }
+
+  move() {
+    const randPos: number = randomNumber(1, 8);
+    const distance: number = 64;
+    const pos = {
+      x: this.x,
+      y: this.y,
+    };
+
+    switch (randPos) {
+      case 1:
+        pos.x += distance;
+        break;
+      case 2:
+        pos.x -= distance;
+        break;
+      case 3:
+        pos.y += distance;
+        break;
+      case 4:
+        pos.y -= distance;
+        break;
+      case 5:
+        pos.x += distance;
+        pos.y += distance;
+        break;
+      case 6:
+        pos.x += distance;
+        pos.y -= distance;
+        break;
+      case 7:
+        pos.x -= distance;
+        pos.y += distance;
+        break;
+      case 8:
+        pos.x -= distance;
+        pos.y -= distance;
+        break;
+      default:
+        break;
+    }
+
+    this.scene.physics.moveTo(this, pos.x, pos.y, 40);
+  }
 }
 
 export default Mob;

@@ -100,7 +100,7 @@ export class GameManager {
     this.spawners[keys.CHEST_LAYER] = new Spawner({
       id: 'Chest_Spawner',
       scene: this.scene,
-      spawnInterval: 3000,
+      spawnIntervalTime: 3000,
       limit: 5,
       objectType: keys.CHEST_LAYER,
       spawnLocations: chestLocations,
@@ -109,7 +109,7 @@ export class GameManager {
     this.spawners[keys.MOB_LAYER] = new Spawner({
       id: 'Mob_Spawner',
       scene: this.scene,
-      spawnInterval: 5000,
+      spawnIntervalTime: 5000,
       limit: 10,
       objectType: keys.MOB_LAYER,
       spawnLocations: mobLocations,

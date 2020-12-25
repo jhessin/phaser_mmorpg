@@ -5,7 +5,7 @@ import { Pickup, Mob } from '../classes';
 export type SpawnerConfig = {
   id: string,
   scene: Phaser.Scene,
-  spawnInterval: number,
+  spawnIntervalTime: number,
   limit: number,
   objectType: string,
   spawnLocations: [number, number][],
@@ -17,7 +17,7 @@ export class Spawner {
 
   scene: Phaser.Scene;
 
-  spawnInterval: number;
+  spawnIntervalTime: number;
 
   limit: number;
 
@@ -25,7 +25,9 @@ export class Spawner {
 
   spawnLocations: [number, number][];
 
-  interval: NodeJS.Timeout;
+  spawnInterval: NodeJS.Timeout;
+
+  moveInterval: NodeJS.Timeout;
 
   objects: Phaser.Physics.Arcade.Group;
 
@@ -34,13 +36,14 @@ export class Spawner {
   constructor(config: SpawnerConfig) {
     this.id = config.id;
     this.scene = config.scene;
-    this.spawnInterval = config.spawnInterval;
+    this.spawnIntervalTime = config.spawnIntervalTime;
     this.limit = config.limit;
     this.objectType = config.objectType;
     this.spawnLocations = config.spawnLocations;
     this.deathSound = config.deathSound;
 
     this.objects = this.scene.physics.add.group();
+    this.objects.runChildUpdate = true;
 
     this.start();
   }
@@ -69,19 +72,42 @@ export class Spawner {
     }
 
     // set an interval to spawn a random object
-    this.interval = setInterval(() => {
+    this.spawnInterval = setInterval(() => {
       if (this.objects.countActive(true) < this.limit) {
         this.spawnObject();
       }
-    }, this.spawnInterval);
+    }, this.spawnIntervalTime);
+
+    this.moveInterval = setInterval(() => {
+      if (this.objectType === keys.MOB_LAYER) {
+        this.moveMobs();
+      }
+    }, 1000);
+  }
+
+  update() {
+    this.objects.getChildren().forEach((obj: Phaser.GameObjects.GameObject) => {
+      if (obj.active) obj.update();
+    });
   }
 
   spawnObject() {
     // spawn a random inactive object.
-    const n = randomNumber(0, this.objects.countActive(false));
-    const obj = this.objects.getFirstNth(n);
+    this.objects.shuffle();
+    const obj = this.objects.getFirstDead();
     if (obj) {
       obj.makeActive();
+    }
+  }
+
+  moveMobs() {
+    if (this.objectType === keys.MOB_LAYER) {
+      this.objects.getChildren().forEach((mob: Mob) => {
+        if (mob.active) {
+          mob.move();
+          mob.drawHealthBar();
+        }
+      });
     }
   }
 }
