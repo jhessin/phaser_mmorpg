@@ -33,7 +33,9 @@ export class PlayerContainer extends Phaser.GameObjects.Container {
 
   body: Phaser.Physics.Arcade.Body;
 
-  constructor(scene: Phaser.Scene, x: number, y: number, frame: number) {
+  attackSound: Phaser.Sound.BaseSound;
+
+  constructor(scene: Phaser.Scene, x: number, y: number, frame: number, attackSound: Phaser.Sound.BaseSound) {
     super(scene, x, y);
     this.scene = scene;
     // Cursor for character movement
@@ -47,6 +49,7 @@ export class PlayerContainer extends Phaser.GameObjects.Container {
     // Track if sword has hit
     this.swordHit = false;
     this.direction = Direction.RIGHT;
+    this.attackSound = attackSound;
 
     // Player stats
     this._health = 10;
@@ -150,6 +153,7 @@ export class PlayerContainer extends Phaser.GameObjects.Container {
 
     if (Phaser.Input.Keyboard.JustDown(this.cursors.space) && !this.playerAttacking) {
       this.playerAttacking = true;
+      this.attackSound.play();
       this.weapon.alpha = 1;
       this.scene.time.delayedCall(150, () => {
         this.weapon.alpha = 0;

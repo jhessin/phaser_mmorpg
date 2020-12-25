@@ -30,7 +30,7 @@ export class Weapon extends Phaser.Physics.Arcade.Image {
       // add bonus health to player
       player.updateHealth(2);
       this.scene.events.emit('updateScore', player.gold);
-      mob.makeInactive();
+      mob.kill();
     }
     mob.drawHealthBar();
   }

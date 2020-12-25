@@ -9,6 +9,7 @@ export type SpawnerConfig = {
   limit: number,
   objectType: string,
   spawnLocations: [number, number][],
+  deathSound?: Phaser.Sound.BaseSound,
 };
 
 export class Spawner {
@@ -28,6 +29,8 @@ export class Spawner {
 
   objects: Phaser.Physics.Arcade.Group;
 
+  deathSound: Phaser.Sound.BaseSound;
+
   constructor(config: SpawnerConfig) {
     this.id = config.id;
     this.scene = config.scene;
@@ -35,6 +38,7 @@ export class Spawner {
     this.limit = config.limit;
     this.objectType = config.objectType;
     this.spawnLocations = config.spawnLocations;
+    this.deathSound = config.deathSound;
 
     this.objects = this.scene.physics.add.group();
 
@@ -57,6 +61,7 @@ export class Spawner {
           pos[1],
           randomNumber(3, 5),
           1,
+          this.deathSound,
         );
         mob.makeInactive();
         this.objects.add(mob);

@@ -12,6 +12,16 @@ export class GameManager {
 
   player: Player;
 
+  goldSound: Phaser.Sound.BaseSound;
+
+  playerDeathSound: Phaser.Sound.BaseSound;
+
+  playerAttackSound: Phaser.Sound.BaseSound;
+
+  playerDamageSound: Phaser.Sound.BaseSound;
+
+  enemyDeathSound: Phaser.Sound.BaseSound;
+
   mapData: Array<Phaser.Tilemaps.ObjectLayer>;
 
   spawners: {[_: string]: Spawner };
@@ -64,6 +74,28 @@ export class GameManager {
       player.setPosition(x, y);
     });
 
+    // Setup Audio
+    this.goldSound = this.scene.sound.add(keys.GOLD_SOUND, {
+      loop: false,
+      volume: 0.2,
+    });
+    this.playerDeathSound = this.scene.sound.add(keys.PLAYER_DEATH, {
+      loop: false,
+      volume: 0.2,
+    });
+    this.playerDamageSound = this.scene.sound.add(keys.PLAYER_DAMAGE, {
+      loop: false,
+      volume: 0.2,
+    });
+    this.playerAttackSound = this.scene.sound.add(keys.PLAYER_ATTACK, {
+      loop: false,
+      volume: 0.2,
+    });
+    this.enemyDeathSound = this.scene.sound.add(keys.ENEMY_DEATH, {
+      loop: false,
+      volume: 0.2,
+    });
+
     // Setup Spawners
     this.spawners[keys.CHEST_LAYER] = new Spawner({
       id: 'Chest_Spawner',
@@ -73,6 +105,7 @@ export class GameManager {
       objectType: keys.CHEST_LAYER,
       spawnLocations: chestLocations,
     });
+
     this.spawners[keys.MOB_LAYER] = new Spawner({
       id: 'Mob_Spawner',
       scene: this.scene,
@@ -80,12 +113,13 @@ export class GameManager {
       limit: 10,
       objectType: keys.MOB_LAYER,
       spawnLocations: mobLocations,
+      deathSound: this.enemyDeathSound,
     });
 
     // Spawn Player
     // Get a random location
     const pos = randomPick(this.playerLocations);
-    this.player = new Player(this.scene, pos[0], pos[1], 0);
+    this.player = new Player(this.scene, pos[0], pos[1], 0, this.playerAttackSound);
 
     // setup collisions
     // ... for map layer and player
@@ -93,11 +127,11 @@ export class GameManager {
     // ... for map layer and mobs
     this.scene.physics.add.collider(this.spawners[keys.MOB_LAYER].objects, this.map.blockedLayer);
 
-    // ... for player and mobs
+    // ... for player weapon and mobs
     this.scene.physics.add.overlap(
       this.player.weapon,
       this.spawners[keys.MOB_LAYER].objects,
-      this.playerAttack,
+      this.enemyHit,
       null,
       this,
     );
@@ -116,17 +150,19 @@ export class GameManager {
     this.player.gold += chest.gold;
     this.scene.events.emit('updateScore', this.player.gold);
     chest.makeInactive();
-    chest.sound.play();
+    this.goldSound.play();
   }
 
-  playerAttack(weapon: Weapon, mob: Mob) {
+  enemyHit(weapon: Weapon, mob: Mob) {
     if (this.player.playerAttacking && !this.player.swordHit) {
+      this.playerDamageSound.play();
       this.player.swordHit = true;
       weapon.attack(mob, this);
       if (this.player.health <= 0) {
         this.player.gold /= 2;
         this.player.gold = Math.floor(this.player.gold);
         this.scene.events.emit('updateScore', this.player.gold);
+        this.playerDeathSound.play();
         this.player.respawn();
       }
     }

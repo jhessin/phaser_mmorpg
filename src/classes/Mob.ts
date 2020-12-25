@@ -16,12 +16,21 @@ export class Mob extends Phaser.Physics.Arcade.Image {
 
   healthBar: Phaser.GameObjects.Graphics;
 
-  constructor(scene: Phaser.Scene, x: number, y: number, health: number, attack: number) {
+  deathSound: Phaser.Sound.BaseSound;
+
+  constructor(
+    scene: Phaser.Scene,
+    x: number, y: number,
+    health: number,
+    attack: number,
+    deathSound: Phaser.Sound.BaseSound,
+  ) {
     super(scene, x, y, keys.MOBS, 0);
     this.scene = scene;
     this._health = health;
     this.maxHealth = health;
     this.attack = attack;
+    this.deathSound = deathSound;
 
     // set the origin to bottom left to match Tiled
     this.setOrigin(0, 1);
@@ -89,6 +98,11 @@ export class Mob extends Phaser.Physics.Arcade.Image {
     this.body.checkCollision.none = false;
     this._health = this.maxHealth;
     this.drawHealthBar();
+  }
+
+  kill() {
+    this.deathSound.play();
+    this.makeInactive();
   }
 
   makeInactive() {

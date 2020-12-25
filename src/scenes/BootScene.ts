@@ -24,6 +24,10 @@ export class BootScene extends Phaser.Scene {
 
     // Load audio
     this.load.audio(keys.GOLD_SOUND, 'assets/audio/Pickup.wav');
+    this.load.audio(keys.ENEMY_DEATH, 'assets/audio/EnemyDeath.wav');
+    this.load.audio(keys.PLAYER_ATTACK, 'assets/audio/PlayerAttack.wav');
+    this.load.audio(keys.PLAYER_DAMAGE, 'assets/audio/PlayerDamage.wav');
+    this.load.audio(keys.PLAYER_DEATH, 'assets/audio/PlayerDeath.wav');
 
     // Load tiled map
     this.load.image(keys.BACKGROUND, 'assets/level/background-extruded.png');
