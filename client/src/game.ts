@@ -1,16 +1,11 @@
 import 'phaser';
-import * as Scenes from './scenes';
+import scene from './scenes';
 import './style.css';
 
 // set the configuration of the game
-const gameConfig: Phaser.Types.Core.GameConfig = {
+const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
-  scene: [
-    Scenes.BootScene,
-    Scenes.TitleScene,
-    Scenes.GameScene,
-    Scenes.UiScene,
-  ],
+  scene,
   physics: {
     default: 'arcade',
     arcade: {
@@ -32,4 +27,18 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
   },
 };
 
-export default new Phaser.Game(gameConfig);
+class Game extends Phaser.Game {
+  constructor() {
+    super(config);
+    this.scene.start('Boot');
+  }
+}
+
+// typescript hoopla
+declare global {
+  interface Window { game: Game; }
+}
+
+window.onload = () => {
+  window.game = new Game();
+};

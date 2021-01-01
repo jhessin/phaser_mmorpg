@@ -1,7 +1,7 @@
 import 'phaser';
 import { GameManager } from '../models';
 
-export class GameScene extends Phaser.Scene {
+export default class GameScene extends Phaser.Scene {
   gameManager: GameManager;
 
   constructor() {
@@ -25,5 +25,3 @@ export class GameScene extends Phaser.Scene {
     this.gameManager.update();
   }
 }
-
-export default GameScene;

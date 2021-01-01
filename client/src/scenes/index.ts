@@ -1,4 +1,11 @@
-export * from './GameScene';
-export * from './TitleScene';
-export * from './UiScene';
-export * from './BootScene';
+import BootScene from './BootScene';
+import TitleScene from './TitleScene';
+import GameScene from './GameScene';
+import UiScene from './UiScene';
+
+export default [
+  BootScene,
+  TitleScene,
+  GameScene,
+  UiScene,
+];

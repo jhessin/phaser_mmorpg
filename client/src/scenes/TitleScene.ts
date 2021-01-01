@@ -2,7 +2,7 @@ import 'phaser';
 import { UiButton } from '../classes';
 import { keys } from '../models';
 
-export class TitleScene extends Phaser.Scene {
+export default class TitleScene extends Phaser.Scene {
   titleText: Phaser.GameObjects.Text;
 
   button: UiButton;
@@ -32,5 +32,3 @@ export class TitleScene extends Phaser.Scene {
     );
   }
 }
-
-export default TitleScene;

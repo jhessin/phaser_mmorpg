@@ -1,7 +1,7 @@
 import 'phaser';
 import { keys } from '../models';
 
-export class BootScene extends Phaser.Scene {
+export default class BootScene extends Phaser.Scene {
   constructor() {
     super('Boot');
   }
@@ -38,5 +38,3 @@ export class BootScene extends Phaser.Scene {
     this.scene.start('Title');
   }
 }
-
-export default BootScene;

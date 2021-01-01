@@ -1,7 +1,7 @@
 import 'phaser';
 import { keys } from '../models';
 
-export class UiScene extends Phaser.Scene {
+export default class UiScene extends Phaser.Scene {
   gameScene: Phaser.Scene;
 
   coinIcon: Phaser.GameObjects.Image;
@@ -42,5 +42,3 @@ export class UiScene extends Phaser.Scene {
     });
   }
 }
-
-export default UiScene;
