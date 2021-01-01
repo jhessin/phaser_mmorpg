@@ -2,13 +2,13 @@ import 'phaser';
 import { keys, randomPick } from './utils';
 import { Spawner } from './Spawner';
 import {
-  Pickup, PlayerContainer as Player, Map, Weapon, Mob,
+  Pickup, PlayerContainer as Player, GameMap, Weapon, Mob,
 } from '../classes';
 
 export class GameManager {
   scene: Phaser.Scene;
 
-  map: Map;
+  gameMap: GameMap;
 
   player: Player;
 
@@ -24,7 +24,7 @@ export class GameManager {
 
   mapData: Array<Phaser.Tilemaps.ObjectLayer>;
 
-  spawners: {[_: string]: Spawner };
+  spawners: { [_: string]: Spawner };
 
   playerLocations: [[number, number]?];
 
@@ -32,10 +32,10 @@ export class GameManager {
     // The game scene used for access to phaser systems
     this.scene = scene;
 
-    // Create the map
-    this.map = new Map(scene);
+    // Create the gameMap
+    this.gameMap = new GameMap(scene);
     // get the map data
-    this.mapData = this.map.map.objects;
+    this.mapData = this.gameMap.map.objects;
 
     // An array of spawners for spawning various game objects
     this.spawners = {};
@@ -44,7 +44,7 @@ export class GameManager {
   }
 
   setup() {
-    // Parse Map Data
+    // Parse GameMap Data
     // Chest and mob locations in arrays
     const chestLocations: [[number, number]?] = [];
     const mobLocations: [[number, number]?] = [];
@@ -123,9 +123,12 @@ export class GameManager {
 
     // setup collisions
     // ... for map layer and player
-    this.scene.physics.add.collider(this.player, this.map.blockedLayer);
+    this.scene.physics.add.collider(this.player, this.gameMap.blockedLayer);
     // ... for map layer and mobs
-    this.scene.physics.add.collider(this.spawners[keys.MOB_LAYER].objects, this.map.blockedLayer);
+    this.scene.physics.add.collider(
+      this.spawners[keys.MOB_LAYER].objects,
+      this.gameMap.blockedLayer,
+    );
 
     // ... for player weapon and mobs
     this.scene.physics.add.overlap(

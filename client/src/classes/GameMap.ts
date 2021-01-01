@@ -1,7 +1,7 @@
 import 'phaser';
 import { keys } from '../models/utils';
 
-export class Map {
+export class GameMap {
   scene: Phaser.Scene;
 
   map: Phaser.Tilemaps.Tilemap;
