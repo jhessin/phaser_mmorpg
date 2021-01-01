@@ -35,7 +35,13 @@ export class PlayerContainer extends Phaser.GameObjects.Container {
 
   attackSound: Phaser.Sound.BaseSound;
 
-  constructor(scene: Phaser.Scene, x: number, y: number, frame: number, attackSound: Phaser.Sound.BaseSound) {
+  constructor(
+    scene: Phaser.Scene,
+    x: number,
+    y: number,
+    frame: number,
+    attackSound: Phaser.Sound.BaseSound,
+  ) {
     super(scene, x, y);
     this.scene = scene;
     // Cursor for character movement
