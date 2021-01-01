@@ -15,7 +15,6 @@ module.exports = merge(
     // enable webpack's built-in optimizations for production
     mode: 'production',
     output: {
-      path: path.resolve(__dirname, '../dist'),
       // The name of the built js file
       filename: 'bundle.min.js',
     },

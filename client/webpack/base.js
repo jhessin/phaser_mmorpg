@@ -13,6 +13,12 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 module.exports = {
   // the main entry point
   entry: './src/game.ts',
+
+  // The output path
+  output: {
+    path: path.resolve(__dirname, '../dist'),
+  },
+
   // enable webpack's built-in optimizations
   // that correspond to development
   mode: 'development',
@@ -26,6 +32,22 @@ module.exports = {
     writeToDisk: true,
   },
 
+  plugins: [
+    new CleanWebpackPlugin({
+      // specify the path where this plugin will delete the files on each
+      // rebuild
+      root: path.resolve(__dirname, './dist'),
+    }),
+    // config webpack to handle renderer swapping
+    new webpack.DefinePlugin({
+      CANVAS_RENDERER: JSON.stringify(true),
+      WEBGL_RENDERER: JSON.stringify(true),
+    }),
+    new HtmlWebpackPlugin({
+      // where your html template is located.
+      template: './index.html',
+    }),
+  ],
   module: {
     rules: [
       {
@@ -58,20 +80,4 @@ module.exports = {
   resolve: {
     extensions: ['.ts', '.tsx', '.js'],
   },
-  plugins: [
-    new CleanWebpackPlugin({
-      // specify the path where this plugin will delete the files on each
-      // rebuild
-      root: path.resolve(__dirname, './dist'),
-    }),
-    // config webpack to handle renderer swapping
-    new webpack.DefinePlugin({
-      CANVAS_RENDERER: JSON.stringify(true),
-      WEBGL_RENDERER: JSON.stringify(true),
-    }),
-    new HtmlWebpackPlugin({
-      // where your html template is located.
-      template: './index.html',
-    }),
-  ],
 };
