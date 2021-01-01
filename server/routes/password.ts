@@ -1,4 +1,3 @@
-/* eslint-disable no-underscore-dangle */
 import express, {
   Request, Response, NextFunction,
 } from 'express';
@@ -21,14 +20,14 @@ const smtpTransport = nodemailer.createTransport({
   },
 });
 
-const handlebarsOptions = {
+const handlebarsOptions: HandlebarOptions = {
   viewEngine: {
     extName: '.hbs',
-    defaultLayout: null,
+    defaultLayout: undefined,
     partialsDir: './templates/',
     layoutsDir: './templates/',
   },
-  viewPath: path.resolve('./server/templates'),
+  viewPath: path.resolve('./templates'),
   extName: '.html',
 };
 
@@ -50,6 +49,7 @@ router.post('/forgot-password', async (req: Request, res: Response, next) => {
   const resetTokenExp = new Date(Date.now() + 600000);
 
   // update user reset password token and exp
+  // eslint-disable-next-line no-underscore-dangle
   await User.findByIdAndUpdate({ _id: user._id }, {
     resetToken,
     resetTokenExp,

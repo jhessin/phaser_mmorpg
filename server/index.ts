@@ -61,7 +61,7 @@ app.get('/profile.html', passport.authenticate('jwt', { session: false }),
   (_req: Request, res: Response) => res.status(200).sendFile('profile.html', { root: './public' }));
 
 // serve public directory as static
-app.use(express.static(`${__dirname}/../public`));
+app.use(express.static(`${__dirname}/public`));
 
 // serve the index page as default
 app.get('/', (_req: Request, res: Response) => {

@@ -1,4 +1,5 @@
-require('dotenv').config();
+import 'dotenv/config';
+// require('dotenv').config();
 
 // Set port
 export const port = process.env.PORT;

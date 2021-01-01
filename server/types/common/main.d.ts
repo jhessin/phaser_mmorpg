@@ -1,6 +1,17 @@
-declare module 'nodemailer-express-handlebars' {
-  function nodemailerExpressHandlebars(data: any): any;
+type HandlebarOptions = {
+  viewEngine?: {
+    extName?: string,
+    defaultLayout?: string,
+    partialsDir?: string,
+    layoutsDir?: string,
+  }
+  viewPath?: string,
+  extName?: string,
+};
 
-  module nodemailerExpressHandlebars {}
+declare module 'nodemailer-express-handlebars' {
+  function nodemailerExpressHandlebars(data: HandlebarOptions): any;
+
+  module nodemailerExpressHandlebars { }
   export = nodemailerExpressHandlebars;
 }

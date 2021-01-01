@@ -34,14 +34,13 @@ router.post('/update-password', async (req: Request, res: Response, next: NextFu
   const {
     password,
   } = req.body;
-  const { _id } = req.user as IUser;
-  const user = await User.findById(_id);
+  // eslint-disable-next-line no-underscore-dangle
+  const id = (req.user as IUser)._id;
+  const user = await User.findByIdAndUpdate(id, { password });
   if (!user) {
     return next(new HttpException(401, 'Invalid User'));
   }
 
-  user.password = password;
-  await user.save();
   return res.status(200).json({
     message: 'password updated',
     status: 200,
