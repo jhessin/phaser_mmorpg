@@ -9,7 +9,7 @@
   "scripts": {
     "build": "webpack --config webpack/prod.js",
     "start": "webpack serve --config webpack/base.js --progress --profile --watch --content-base src/",
-    "lint": "eslint . --ext .ts",
+    "lint": "eslint src/ --ext .ts --fix",
     "stop": "killall node"
   },
   "devDependencies": {
