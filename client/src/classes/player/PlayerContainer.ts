@@ -1,10 +1,7 @@
 import 'phaser';
 import { Player } from './Player';
 import { Weapon } from '../Weapon';
-
-enum Direction {
-  RIGHT, LEFT, UP, DOWN,
-}
+import { Direction } from '../../utils/direction';
 
 export class PlayerContainer extends Phaser.GameObjects.Container {
   public scene: Phaser.Scene;
