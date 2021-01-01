@@ -10,7 +10,8 @@
   "scripts": {
     "build": "tsc",
     "start": "ts-node index.ts",
-    "dev": "npx nodemon"
+    "dev": "nodemon",
+    "lint": "eslint . --ext .ts --fix"
   },
   "devDependencies": {
     "@tsconfig/node14": "^1.0.0",

@@ -3,10 +3,13 @@
   "compilerOptions": {
     "outDir": "./dist/",
     "noImplicitAny": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
     "target": "es5",
     "sourceMap": true,
     "typeRoots": [
       "./types"
-    ]
+    ],
+    "allowJs": true
   }
 }
