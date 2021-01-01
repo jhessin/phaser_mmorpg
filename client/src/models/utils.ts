@@ -37,4 +37,9 @@ export function randomPick(arr: Array<any>) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-export default keys;
+export default {
+  keys,
+  getTiledProperty,
+  randomNumber,
+  randomPick,
+};
