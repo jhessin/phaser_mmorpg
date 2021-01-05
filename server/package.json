@@ -26,6 +26,7 @@
     "@types/passport": "^1.0.5",
     "@types/passport-jwt": "^3.0.3",
     "@types/passport-local": "^1.0.33",
+    "@types/socket.io": "^2.1.12",
     "@typescript-eslint/eslint-plugin": "^4.11.0",
     "@typescript-eslint/parser": "^4.11.0",
     "clean-webpack-plugin": "^3.0.0",

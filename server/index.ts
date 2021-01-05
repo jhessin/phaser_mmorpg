@@ -7,6 +7,8 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import mongoose from 'mongoose';
 import passport from 'passport';
+import socketio from 'socket.io';
+
 import {
   port, mongoConnectionUrl, mongoUserName, mongoPassword, corsOrigin,
 } from './env';
@@ -19,6 +21,17 @@ import secureRoutes from './routes/secure';
 import './auth/auth';
 
 const app = express();
+const server = require('http').createServer(app);
+const io = require('socket.io')(server);
+
+io.on('connection', (socket: socketio.Socket) => {
+  // player disconnected
+  // socket.on('disconnect', () => {
+  //   console.log('player disconnected from our game');
+  // });
+  console.log('player connected to our game');
+  console.log(socket);
+});
 
 // setup mongo connection
 const mongoConfig: mongoose.ConnectOptions = {
@@ -92,7 +105,7 @@ app.use((
 
 mongoose.connection.on('connected', () => {
   console.log('connected to mongo');
-  app.listen(port, () => {
+  server.listen(port, () => {
     console.log(`server running on port: ${port}`);
   });
 });
