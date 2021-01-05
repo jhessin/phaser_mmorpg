@@ -9,7 +9,8 @@
   "scripts": {
     "build": "webpack --config webpack/prod.js",
     "start": "webpack serve --config webpack/base.js --progress --profile --watch --content-base src/",
-    "lint": "eslint src/ --ext .ts --fix"
+    "lint": "eslint src/ --ext .ts --fix",
+    "bundle": "./bundle.sh"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^4.11.0",
