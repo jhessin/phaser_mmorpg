@@ -1,5 +1,5 @@
 #!/usr/bin/env zsh
 
 git add -A
-git commit -m "Added socket.io packages for client and server."
+git commit
 git push
