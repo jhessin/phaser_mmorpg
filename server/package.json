@@ -11,7 +11,9 @@
     "build": "tsc",
     "start": "ts-node index.ts",
     "dev": "nodemon",
-    "lint": "eslint . --ext .ts --fix"
+    "lint": "eslint . --ext .ts --fix",
+    "mongo:up": "docker-compose up -d",
+    "mongo:down": "docker-compose down"
   },
   "devDependencies": {
     "@tsconfig/node14": "^1.0.0",
