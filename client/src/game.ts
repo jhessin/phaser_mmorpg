@@ -28,9 +28,9 @@ const config: Phaser.Types.Core.GameConfig = {
   },
 };
 
-class Game extends Phaser.Game {
+export default class Game extends Phaser.Game {
   globals: {
-    socket: any,
+    socket: SocketIOClient.Socket,
   };
 
   constructor() {
