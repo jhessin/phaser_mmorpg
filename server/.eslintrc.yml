@@ -21,6 +21,8 @@ settings:
         - .tsx
         - .json
 rules:
+  no-shadow: off
+  '@typescript-eslint/no-shadow': off
   no-console: off
   import/extensions:
     - error
