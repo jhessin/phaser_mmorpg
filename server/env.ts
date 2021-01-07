@@ -14,7 +14,7 @@ export const mongoUserName = process.env.MONGO_USER_NAME;
 export const mongoPassword = process.env.MONGO_PASSWORD;
 
 // Get the Cors Origin
-export const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:8080';
+export const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:8000';
 
 // Get JWT Secrets
 export const jwtSecret = process.env.JWT_SECRET;

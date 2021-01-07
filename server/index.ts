@@ -65,6 +65,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 // parse json objects
 app.use(bodyParser.json());
 app.use(cookieParser());
+console.log(`corsOrigin = ${corsOrigin}`);
 app.use(cors({
   credentials: true,
   origin: corsOrigin,
