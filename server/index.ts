@@ -23,6 +23,7 @@ const app = express();
 const server = require('http').Server(app);
 const io = require('socket.io')(server, {
   cors: {
+    credentials: true,
     origin: corsOrigin,
     methods: ['GET', 'POST'],
   },
@@ -30,11 +31,11 @@ const io = require('socket.io')(server, {
 
 io.on('connection', (socket: socketio.Socket) => {
   // player disconnected
-  // socket.on('disconnect', () => {
-  //   console.log('player disconnected from our game');
-  // });
+  socket.on('disconnect', () => {
+    console.log('player disconnected from our game');
+  });
   console.log('player connected to our game');
-  console.log(socket);
+  console.log(socket.id);
 });
 
 // setup mongo connection
