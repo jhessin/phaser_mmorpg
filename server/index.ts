@@ -3,7 +3,6 @@ import express, {
   Response,
 } from 'express';
 import bodyParser from 'body-parser';
-import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import mongoose from 'mongoose';
 import passport from 'passport';
@@ -71,10 +70,6 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cookieParser());
 console.log(`corsOrigin = ${corsOrigin}`);
-app.use(cors({
-  credentials: true,
-  origin: corsOrigin,
-}));
 
 app.get('/profile.html', passport.authenticate('jwt', { session: false }),
   (_req: Request, res: Response) => res.status(200).sendFile('profile.html', { root: './public' }));
