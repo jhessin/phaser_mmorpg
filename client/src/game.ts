@@ -29,11 +29,14 @@ const config: Phaser.Types.Core.GameConfig = {
 };
 
 class Game extends Phaser.Game {
-  globals: any;
+  globals: {
+    socket: any,
+  };
 
   constructor() {
     super(config);
     const socket = io('http://localhost:3000');
+    console.log('created socket');
     this.globals = { socket };
     this.scene.start('Boot');
   }
