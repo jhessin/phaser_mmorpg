@@ -35,6 +35,8 @@ export default class BootScene extends Phaser.Scene {
   }
 
   create(): void {
-    this.scene.start('Title');
+    // TODO: Update to go to title screen
+    // this.scene.start('Title');
+    this.scene.start('Game');
   }
 }
