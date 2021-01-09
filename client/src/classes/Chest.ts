@@ -1,25 +1,34 @@
 import 'phaser';
+import { v4 } from 'uuid';
 import { keys, randomNumber } from '../game_manager/utils';
 
 export default class Chest extends Phaser.Physics.Arcade.Image {
-  gold: number;
+  coins: number;
 
-  constructor(scene: Phaser.Scene, x: number, y: number) {
-    super(scene, x, y, keys.ITEMS, 0);
+  id: string;
+
+  constructor(
+    scene: Phaser.Scene,
+    x: number,
+    y: number,
+    key = keys.ITEMS,
+    frame = 0,
+    coins = randomNumber(5, 15),
+    id = v4(),
+  ) {
+    super(scene, x, y, key, frame);
     this.scene = scene;
-
-    // set the origin to bottom left to match Tiled
-    this.setOrigin(0, 1);
-    this.setScale(2);
-
-    // how much gold does the pickup reward
-    this.gold = randomNumber(5, 15);
+    this.coins = coins;
+    this.id = id;
 
     // enable physics
     this.scene.physics.world.enable(this);
-
     // add to the scene
     this.scene.add.existing(this);
+    // set the origin to bottom left to match Tiled
+    this.setOrigin(0, 1);
+    // scale the chest game object
+    this.setScale(2);
   }
 
   makeActive() {

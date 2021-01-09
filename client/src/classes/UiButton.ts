@@ -51,16 +51,17 @@ export default class UiButton extends Phaser.GameObjects.Container {
 
   createButton() {
     // Create the button
-    this.button = new Phaser.GameObjects.Image(this.scene, 0, 0, this.key);
+    // this.button = new Phaser.GameObjects.Image(this.scene, 0, 0, this.key);
+    this.button = this.scene.add.image(0, 0, this.key);
     // add interactivity
     this.button.setInteractive();
     // blow it up!
     this.button.setScale(1.4);
 
     // create the text
-    this.buttonText = new Phaser.GameObjects.Text(this.scene, 0, 0, this.text, {
+    this.buttonText = this.scene.add.text(0, 0, this.text, {
       fontSize: '26px',
-      color: 'white',
+      color: '#fff',
     });
     // Center the text in the button if necessary?
     Phaser.Display.Align.In.Center(this.buttonText, this.button);

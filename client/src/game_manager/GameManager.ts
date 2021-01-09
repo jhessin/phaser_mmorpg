@@ -1,9 +1,12 @@
 import 'phaser';
 import { keys, randomPick } from './utils';
-import Spawner from './Spawner';
 import {
-  Chest as Pickup, PlayerContainer as Player, GameMap, Weapon, Monster as Mob,
+  PlayerContainer as Player, GameMap, Weapon,
+  Monster as Mob, Chest as Pickup,
 } from '../classes';
+import {
+  ChestModel, MonsterModel, Spawner, PlayerModel,
+} from '.';
 
 export default class GameManager {
   scene: Phaser.Scene;
@@ -22,11 +25,21 @@ export default class GameManager {
 
   enemyDeathSound: Phaser.Sound.BaseSound;
 
-  mapData: Array<Phaser.Tilemaps.ObjectLayer>;
+  mapData: Phaser.Tilemaps.ObjectLayer[];
 
-  spawners: { [_: string]: Spawner };
+  spawners: Map<string, Spawner>;
 
-  playerLocations: [[number, number]?];
+  playerLocations: [number, number][];
+
+  chests: Map<string, ChestModel>;
+
+  monsters: Map<string, MonsterModel>;
+
+  players: Map<string, PlayerModel>;
+
+  chestLocations: [number, number][];
+
+  monsterLocations: [number, number][];
 
   constructor(scene: Phaser.Scene) {
     // The game scene used for access to phaser systems
@@ -35,20 +48,28 @@ export default class GameManager {
     // Create the gameMap
     this.gameMap = new GameMap(scene);
     // get the map data
-    this.mapData = this.gameMap.map.objects;
+    this.mapData = this.gameMap.tilemap.objects;
 
     // An array of spawners for spawning various game objects
-    this.spawners = {};
+    this.spawners = new Map();
+    this.chests = new Map();
+    this.monsters = new Map();
+    this.players = new Map();
 
     this.playerLocations = [];
+    this.chestLocations = {};
+    this.monsterLocations = {};
   }
 
   setup() {
-    // Parse GameMap Data
-    // Chest and mob locations in arrays
-    const chestLocations: [[number, number]?] = [];
-    const mobLocations: [[number, number]?] = [];
+    this.parseMapData();
+    this.setupEventListeners();
+    this.setupSpawners();
+    this.spawnPlayer();
+  }
 
+  parseMapData() {
+    // Parse GameMap Data
     // Iterate through each map layer
     this.mapData.forEach((layer: Phaser.Tilemaps.ObjectLayer) => {
       if (layer.name === keys.PLAYER_LAYER) {
@@ -59,16 +80,82 @@ export default class GameManager {
       } else if (layer.name === keys.CHEST_LAYER) {
         // Chest locations
         layer.objects.forEach((obj) => {
-          chestLocations.push([obj.x * 2, obj.y * 2]);
+          this.chestLocations.push([obj.x * 2, obj.y * 2]);
         });
       } else if (layer.name === keys.MOB_LAYER) {
         // Mob locations
         layer.objects.forEach((obj) => {
-          mobLocations.push([obj.x * 2, obj.y * 2]);
+          this.monsterLocations.push([obj.x * 2, obj.y * 2]);
         });
       }
     });
+  }
+
+  setupEventListeners() {
     // Setup Event Listeners
+    this.scene.events.on('pickUpChest', (chestId: string, playerId: string) => {
+      // update the spawner
+      const chest = this.chests.get(chestId);
+      const player = this.players.get(playerId);
+      if (chest && player) {
+        const { gold } = chest;
+
+        // update the players gold
+        player.updateGold(gold);
+        this.scene.events.emit('updateScore', player.gold);
+
+        // remove the chest
+        this.spawners.get(chest.spawnerId).removeObject(chestId);
+        this.scene.events.emit('chestRemoved', chestId);
+      }
+    });
+
+    this.scene.events.on('monsterAttacked', (monsterId: string, playerId: string) => {
+      // update the spawners
+      const monster = this.monsters.get(monsterId);
+      const player = this.players.get(playerId);
+
+      if (monster && player) {
+        const { gold, attack } = monster;
+
+        // subtract health monster model
+        monster.loseHealth();
+
+        // check the monsters health, and if dead remove that object
+        if (monster.health <= 0) {
+          // updating the players gold
+          player.updateGold(gold);
+          this.scene.events.emit('updateScore', player.gold);
+
+          // remove the monster
+          this.spawners.get(monster.spawnerId).removeObject(monsterId);
+          this.scene.events.emit('monsterRemoved', monsterId);
+
+          // add bonus health to the player
+          player.updateHealth(2);
+        } else {
+          // update the players health
+          player.updateHealth(-attack);
+          this.scene.events.emit('updatePlayerHealth', playerId,
+            player.health);
+
+          // update the monsters health
+          this.scene.events.emit('updateMonsterHealth', monsterId, monster.health);
+
+          // check the player's health, if below 0 have the player respawn
+          if (player.health <= 0) {
+            // update the gold the player has
+            player.updateGold(-player.gold / 2);
+            this.scene.events.emit('updateScore', player.gold);
+
+            // respawn the player
+            player.respawn();
+            this.scene.events.emit('respawnPlayer', player);
+          }
+        }
+      }
+    });
+
     this.scene.events.on('respawnPlayer', (player: Player) => {
       const [x, y] = randomPick(this.playerLocations);
       player.setPosition(x, y);
@@ -150,7 +237,7 @@ export default class GameManager {
   }
 
   chestOverlap(_: any, chest: Pickup) {
-    this.player.gold += chest.gold;
+    this.player.gold += chest.coins;
     this.scene.events.emit('updateScore', this.player.gold);
     chest.makeInactive();
     this.goldSound.play();

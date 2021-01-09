@@ -1,21 +1,23 @@
 import 'phaser';
-import { keys, randomNumber } from './utils';
-import { Chest as Pickup, Monster as Mob } from '../classes';
+import { SpawnerType, keys, randomNumber } from './utils';
+
+type Callback = (id: string, obj: any) => void;
 
 export type SpawnerConfig = {
-  id: string,
-  scene: Phaser.Scene,
-  spawnIntervalTime: number,
-  limit: number,
-  objectType: string,
-  spawnLocations: [number, number][],
+  id?: string,
+  scene?: Phaser.Scene,
+  spawnInterval?: number,
+  limit?: number,
+  objectType?: SpawnerType,
+  spawnLocations?: [number, number][],
   deathSound?: Phaser.Sound.BaseSound,
+  addObject?: Callback,
+  deleteObject?: Callback,
+  moveObject?: Callback;
 };
 
 export default class Spawner {
   id: string;
-
-  scene: Phaser.Scene;
 
   spawnIntervalTime: number;
 
@@ -33,13 +35,24 @@ export default class Spawner {
 
   deathSound: Phaser.Sound.BaseSound;
 
+  scene: Phaser.Scene;
+
+  addObject: Callback;
+
+  deleteObject: Callback;
+
+  moveObject: Callback;
+
   constructor(config: SpawnerConfig) {
     this.id = config.id;
     this.scene = config.scene;
-    this.spawnIntervalTime = config.spawnIntervalTime;
+    this.spawnIntervalTime = config.spawnInterval;
     this.limit = config.limit;
     this.objectType = config.objectType;
     this.spawnLocations = config.spawnLocations;
+    this.addObject = config.addObject;
+    this.deleteObject = config.deleteObject;
+    this.moveObject = config.moveObject;
     this.deathSound = config.deathSound;
 
     this.objects = this.scene.physics.add.group();
@@ -83,6 +96,10 @@ export default class Spawner {
         this.moveMobs();
       }
     }, 1000);
+  }
+
+  removeObject(chestId: string) {
+    throw new Error('Method not implemented.');
   }
 
   update() {

@@ -1,7 +1,10 @@
 import 'phaser';
+import { v4 } from 'uuid';
 import { keys, randomNumber } from '../game_manager/utils';
 
 export default class Monster extends Phaser.Physics.Arcade.Image {
+  id: string;
+
   private _health: number;
 
   maxHealth: number;
@@ -24,38 +27,36 @@ export default class Monster extends Phaser.Physics.Arcade.Image {
     health: number,
     attack: number,
     deathSound: Phaser.Sound.BaseSound,
+    key: string = keys.MOBS,
+    frame: number = 0,
+    id: string = v4(),
   ) {
-    super(scene, x, y, keys.MOBS, 0);
+    super(scene, x, y, key, frame);
     this.scene = scene;
+    this.id = id;
     this._health = health;
     this.maxHealth = health;
-    this.attack = attack;
-    this.deathSound = deathSound;
-
-    // set the origin to bottom left to match Tiled
-    this.setOrigin(0, 1);
-
-    // Scale it up
-    this.setScale(2);
-
-    // Create a sound for when the pickup is ... well picked up.
-    this.sound = this.scene.sound.add(keys.GOLD_SOUND, {
-      loop: false,
-      volume: 0.2,
-    });
-
-    // The number of coins the pickup rewards.
-    this.gold = randomNumber(1, 3) * (health + attack);
 
     // enable physics
     this.scene.physics.world.enable(this);
     // set immovable
     this.setImmovable(false);
+    // scale the monster
+    this.setScale(2);
     // collide with world bounds
     this.body.setCollideWorldBounds(true);
-
-    // add to the scene
+    // add the monster to our existing scene
     this.scene.add.existing(this);
+    // set the origin to bottom left to match Tiled
+    this.setOrigin(0, 1);
+
+    this.attack = attack;
+    this.deathSound = deathSound;
+
+    // The gold the monster rewards
+    this.gold = randomNumber(1, 3) * (health + attack);
+
+    this.drawHealthBar();
   }
 
   get health(): number {
@@ -72,10 +73,6 @@ export default class Monster extends Phaser.Physics.Arcade.Image {
     }
   }
 
-  updateHealth(value: number) {
-    this.health = value;
-  }
-
   drawHealthBar() {
     // Create a health bar
     if (!this.healthBar) {
@@ -87,6 +84,10 @@ export default class Monster extends Phaser.Physics.Arcade.Image {
     // this.healthBar.fillGradientStyle(0xFF0000, 0xFFFFFF, 0xFF0000, 0xFFFFFF);
     this.healthBar.fillStyle(0xFF0000, 1);
     this.healthBar.fillRect(this.x, this.y + 8, 64 * (this._health / this.maxHealth), 5);
+  }
+
+  updateHealth(value: number) {
+    this.health = value;
   }
 
   makeActive() {

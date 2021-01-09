@@ -19,6 +19,11 @@ export const keys = {
   MOB_LAYER: 'monster_locations',
 };
 
+export enum SpawnerType {
+  MONSTER = 'MONSTER',
+  CHEST = 'CHEST',
+}
+
 export function getTiledProperty(obj: any, propertyName: string) {
   for (let i = 0; i < obj.properties.length; i += 1) {
     const property = obj.properties[i];

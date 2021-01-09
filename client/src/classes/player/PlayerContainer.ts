@@ -1,5 +1,6 @@
 import 'phaser';
 import Player from './Player';
+import PlayerObject from '../../game_manager/PlayerModel';
 import Weapon from './Weapon';
 import { Direction } from '../../utils/direction';
 
@@ -127,16 +128,14 @@ export default class PlayerContainer extends Phaser.GameObjects.Container {
     this.healthBar.fillRect(x, y, width * (this._health / this.maxHealth), thickness);
   }
 
-  respawn() {
-    this._health = this.maxHealth;
-    this.scene.events.emit('respawnPlayer', this);
+  updateHealth(delta: number) {
+    this.health += delta;
   }
 
-  updateHealth(delta: number) {
-    this._health += delta;
-    if (this._health > this.maxHealth) {
-      this._health = this.maxHealth;
-    }
+  respawn(playerObject: PlayerObject) {
+    this.health = playerObject.health;
+    this.scene.events.emit('respawnPlayer', this);
+    this.drawHealthBar();
   }
 
   update() {
