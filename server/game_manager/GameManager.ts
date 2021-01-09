@@ -1,31 +1,60 @@
 import socketio from 'socket.io';
+import Player from './Player';
 
 export default class GameManager {
-  io: socketio.Server;
+  private players: Map<string, Player>;
+
+  private io: socketio.Server;
 
   constructor(io: socketio.Server) {
     this.io = io;
+    this.players = new Map();
   }
 
   setup() {
+    this.setupEventListeners();
+  }
+
+  setupEventListeners() {
     this.io.on('connection', (socket: socketio.Socket) => {
       // player disconnected
       socket.on('disconnect', () => {
-        console.log('player disconnected from our game');
+        // delete user data from server
+        this.players.delete(socket.id);
+
+        // emit a message to all players
+        this.io.emit('disconnect', socket.id);
       });
 
-      socket.on('newPlayer', (obj: any) => {
-        console.log(obj);
-        console.log('newPlayer event caught');
+      socket.on('newPlayer', () => {
+        // create a new player object
+        this.spawnPlayer(socket.id);
 
-        // broadcast an event to every OTHER socket
-        socket.broadcast.emit('newPlayer', socket.id, 'socket.broadcast');
+        // send the players object to the new player
+        socket.emit('currentPlayers', this.players);
 
-        // broadcast an event to ALL sockets including this one.
-        this.io.emit('newPlayer', socket.id, 'io.emit');
+        // send the monsters object to the new player
+        socket.emit('currentPlayers', this.players);
+
+        // send the chest objects to the new player
+        socket.emit('currentPlayers', this.players);
+
+        // inform the other players of the new player that joined
       });
+
       console.log('player connected to our game');
       console.log(socket.id);
     });
+  }
+
+  spawnPlayer(id: string) {
+    const player = new Player(id, []);
+    this.players.set(id, player);
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  getValidPlayerLocations(): [number, number][] {
+    // TODO: Implement this
+    return [];
   }
 }
