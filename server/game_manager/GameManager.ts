@@ -28,7 +28,7 @@ export default class GameManager {
 
       socket.on('newPlayer', () => {
         // create a new player object
-        this.spawnPlayer(socket.id);
+        // this.spawnPlayer(socket.id);
 
         // send the players object to the new player
         socket.emit('currentPlayers', this.players);
