@@ -1,9 +1,9 @@
 import 'phaser';
-import { GameManager } from '../models';
+import { ClientManager } from '../models';
 import Game from '../game';
 
 export default class GameScene extends Phaser.Scene {
-  gameManager: GameManager;
+  gameManager: ClientManager;
 
   socket: SocketIOClient.Socket;
 
@@ -32,7 +32,7 @@ export default class GameScene extends Phaser.Scene {
   // Create assets
   create() {
     // setup the game manager
-    this.gameManager = new GameManager(this);
+    this.gameManager = new ClientManager(this);
     this.gameManager.setup();
 
     // emit an event to server that a new player joined

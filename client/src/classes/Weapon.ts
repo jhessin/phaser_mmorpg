@@ -1,7 +1,7 @@
 import 'phaser';
 import { keys } from '../models/utils';
 import { PlayerContainer } from './player';
-import { GameManager } from '../models';
+import { ClientManager } from '../models';
 import { Mob } from './Mob';
 
 export class Weapon extends Phaser.Physics.Arcade.Image {
@@ -19,7 +19,7 @@ export class Weapon extends Phaser.Physics.Arcade.Image {
     this.alpha = 0;
   }
 
-  attack(mob: Mob, manager: GameManager) {
+  attack(mob: Mob, manager: ClientManager) {
     const { gold, attack } = mob;
     const { player } = manager;
     player.updateHealth(-attack);

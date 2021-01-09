@@ -5,7 +5,7 @@ import {
   Pickup, PlayerContainer as Player, GameMap, Weapon, Mob,
 } from '../classes';
 
-export class GameManager {
+export class ClientManager {
   scene: Phaser.Scene;
 
   gameMap: GameMap;
@@ -177,4 +177,4 @@ export class GameManager {
   }
 }
 
-export default GameManager;
+export default ClientManager;
