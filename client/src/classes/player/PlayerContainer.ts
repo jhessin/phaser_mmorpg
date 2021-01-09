@@ -1,9 +1,9 @@
 import 'phaser';
-import { Player } from './Player';
-import { Weapon } from '../Weapon';
+import Player from './Player';
+import Weapon from './Weapon';
 import { Direction } from '../../utils/direction';
 
-export class PlayerContainer extends Phaser.GameObjects.Container {
+export default class PlayerContainer extends Phaser.GameObjects.Container {
   public scene: Phaser.Scene;
 
   cursors: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -32,36 +32,43 @@ export class PlayerContainer extends Phaser.GameObjects.Container {
 
   attackSound: Phaser.Sound.BaseSound;
 
+  flipX: boolean;
+
+  id: string;
+
   constructor(
     scene: Phaser.Scene,
     x: number,
     y: number,
+    key: number,
     frame: number,
+    health: number,
+    maxHealth: number,
+    id: string,
     attackSound: Phaser.Sound.BaseSound,
   ) {
     super(scene, x, y);
+    // the scene this container will be added to
     this.scene = scene;
-    // Cursor for character movement
-    this.cursors = scene.input.keyboard.createCursorKeys();
-    // save the players coins for use later
-    this.gold = 0;
     // set velocity
     this.velocity = 160;
+    // direction player is facing
+    this.direction = Direction.RIGHT;
     // Track if player is attacking
     this.playerAttacking = false;
+    this.flipX = true;
     // Track if sword has hit
     this.swordHit = false;
-    this.direction = Direction.RIGHT;
-    this.attackSound = attackSound;
-
     // Player stats
-    this._health = 10;
-    this.maxHealth = this._health;
+    this.maxHealth = maxHealth;
+    this.health = health;
     this.gold = 0;
+    // Player id
+    this.id = id;
+    this.attackSound = attackSound;
 
     // set a size for the container
     this.setSize(64, 64);
-
     // enable physics
     this.scene.physics.world.enable(this);
     // collide with world bounds
@@ -72,7 +79,7 @@ export class PlayerContainer extends Phaser.GameObjects.Container {
     this.scene.cameras.main.startFollow(this);
 
     // create a player
-    this.player = new Player(this.scene, 0, 0, frame);
+    this.player = new Player(this.scene, 0, 0, key, frame);
     this.add(this.player);
 
     // create the weapon
@@ -80,6 +87,9 @@ export class PlayerContainer extends Phaser.GameObjects.Container {
 
     // Draw the healthBar
     this.drawHealthBar();
+
+    // Cursor for character movement
+    this.cursors = scene.input.keyboard.createCursorKeys();
   }
 
   get health(): number {
@@ -186,5 +196,3 @@ export class PlayerContainer extends Phaser.GameObjects.Container {
     this.drawHealthBar();
   }
 }
-
-export default PlayerContainer;

@@ -1,11 +1,11 @@
 import 'phaser';
 import { keys, randomPick } from './utils';
-import { Spawner } from './Spawner';
+import Spawner from './Spawner';
 import {
-  Pickup, PlayerContainer as Player, GameMap, Weapon, Mob,
+  Chest as Pickup, PlayerContainer as Player, GameMap, Weapon, Monster as Mob,
 } from '../classes';
 
-export class ClientManager {
+export default class GameManager {
   scene: Phaser.Scene;
 
   gameMap: GameMap;
@@ -176,5 +176,3 @@ export class ClientManager {
     this.player.update();
   }
 }
-
-export default ClientManager;

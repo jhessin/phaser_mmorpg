@@ -1,7 +1,7 @@
 import 'phaser';
-import { keys } from '../models/utils';
+import { keys } from '../game_manager/utils';
 
-export class GameMap {
+export default class GameMap {
   scene: Phaser.Scene;
 
   map: Phaser.Tilemaps.Tilemap;
@@ -41,5 +41,3 @@ export class GameMap {
     this.blockedLayer.setCollisionByExclusion([-1]);
   }
 }
-
-export default Map;

@@ -1,6 +1,6 @@
 import 'phaser';
 import { keys, randomNumber } from './utils';
-import { Pickup, Mob } from '../classes';
+import { Chest as Pickup, Monster as Mob } from '../classes';
 
 export type SpawnerConfig = {
   id: string,
@@ -12,7 +12,7 @@ export type SpawnerConfig = {
   deathSound?: Phaser.Sound.BaseSound,
 };
 
-export class Spawner {
+export default class Spawner {
   id: string;
 
   scene: Phaser.Scene;
@@ -111,5 +111,3 @@ export class Spawner {
     }
   }
 }
-
-export default Spawner;

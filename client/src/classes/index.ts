@@ -1,6 +1,15 @@
-export * from './Pickup';
+import Chest from './Chest';
+import UiButton from './UiButton';
+import GameMap from './GameMap';
+import Monster from './Monster';
+import PlayerContainer from './player';
+
 export * from './player';
-export * from './UiButton';
-export * from './GameMap';
-export * from './Mob';
-export * from './Weapon';
+
+export {
+  Chest,
+  UiButton,
+  GameMap,
+  Monster,
+  PlayerContainer,
+};

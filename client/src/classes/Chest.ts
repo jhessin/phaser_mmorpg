@@ -1,7 +1,7 @@
 import 'phaser';
-import { keys, randomNumber } from '../models/utils';
+import { keys, randomNumber } from '../game_manager/utils';
 
-export class Pickup extends Phaser.Physics.Arcade.Image {
+export default class Chest extends Phaser.Physics.Arcade.Image {
   gold: number;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
@@ -34,5 +34,3 @@ export class Pickup extends Phaser.Physics.Arcade.Image {
     this.body.checkCollision.none = true;
   }
 }
-
-export default Pickup;

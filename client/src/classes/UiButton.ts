@@ -1,6 +1,6 @@
 import 'phaser';
 
-export class UiButton extends Phaser.GameObjects.Container {
+export default class UiButton extends Phaser.GameObjects.Container {
   key: string;
 
   hoverKey: string;
@@ -83,5 +83,3 @@ export class UiButton extends Phaser.GameObjects.Container {
     });
   }
 }
-
-export default UiButton;

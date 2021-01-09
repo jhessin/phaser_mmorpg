@@ -1,25 +1,25 @@
 import 'phaser';
-import { keys } from '../models/utils';
-import { PlayerContainer } from './player';
-import { ClientManager } from '../models';
-import { Mob } from './Mob';
+import { keys } from '../../game_manager/utils';
+import PlayerContainer from './PlayerContainer';
+import GameManager from '../../game_manager';
+import Mob from '../Monster';
 
-export class Weapon extends Phaser.Physics.Arcade.Image {
+export default class Weapon extends Phaser.Physics.Arcade.Image {
   damage: number;
 
   constructor(container: PlayerContainer, damage: number = 1) {
     super(container.scene, 40, 0, keys.ITEMS, 4);
     this.scene = container.scene;
-    this.damage = damage;
-
+    this.scene.add.existing(this);
     this.setScale(1.5);
     this.scene.physics.world.enable(this);
-    this.scene.add.existing(this);
     container.add(this);
     this.alpha = 0;
+
+    this.damage = damage;
   }
 
-  attack(mob: Mob, manager: ClientManager) {
+  attack(mob: Mob, manager: GameManager) {
     const { gold, attack } = mob;
     const { player } = manager;
     player.updateHealth(-attack);
@@ -35,5 +35,3 @@ export class Weapon extends Phaser.Physics.Arcade.Image {
     mob.drawHealthBar();
   }
 }
-
-export default Weapon;

@@ -1,8 +1,8 @@
 import 'phaser';
-import { keys } from '../../models/utils';
+import { keys } from '../../game_manager/utils';
 
-export class Player extends Phaser.Physics.Arcade.Image {
-  constructor(scene: Phaser.Scene, x: number, y: number, frame: number) {
+export default class Player extends Phaser.Physics.Arcade.Image {
+  constructor(scene: Phaser.Scene, x: number, y: number, key: number, frame: number) {
     super(scene, x, y, keys.CHARACTERS, frame);
     this.scene = scene;
 
@@ -16,5 +16,3 @@ export class Player extends Phaser.Physics.Arcade.Image {
     this.scene.add.existing(this);
   }
 }
-
-export default Player;

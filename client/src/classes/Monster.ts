@@ -1,7 +1,7 @@
 import 'phaser';
-import { keys, randomNumber } from '../models/utils';
+import { keys, randomNumber } from '../game_manager/utils';
 
-export class Mob extends Phaser.Physics.Arcade.Image {
+export default class Monster extends Phaser.Physics.Arcade.Image {
   private _health: number;
 
   maxHealth: number;
@@ -160,5 +160,3 @@ export class Mob extends Phaser.Physics.Arcade.Image {
     this.scene.physics.moveTo(this, pos.x, pos.y, 40);
   }
 }
-
-export default Mob;
