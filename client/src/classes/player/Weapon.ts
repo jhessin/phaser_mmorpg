@@ -1,5 +1,5 @@
 import 'phaser';
-import { keys } from '../../game_manager/utils';
+import { keys, randomNumber } from '../../game_manager/utils';
 import PlayerContainer from './PlayerContainer';
 import GameManager from '../../game_manager';
 import Mob from '../Monster';
@@ -20,13 +20,13 @@ export default class Weapon extends Phaser.Physics.Arcade.Image {
   }
 
   attack(mob: Mob, manager: GameManager) {
-    const { gold, attack } = mob;
+    const { attack } = mob;
     const { player } = manager;
     player.updateHealth(-attack);
     // mob.health -= this.damage;
     mob.updateHealth(mob.health - this.damage);
     if (mob.health <= 0) {
-      player.gold += gold;
+      player.gold += randomNumber(10, 50);
       // add bonus health to player
       player.updateHealth(2);
       this.scene.events.emit('updateScore', player.gold);

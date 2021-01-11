@@ -27,8 +27,6 @@ export default class PlayerContainer extends Phaser.GameObjects.Container {
 
   weapon: Weapon;
 
-  healthBar: any;
-
   body: Phaser.Physics.Arcade.Body;
 
   attackSound: Phaser.Sound.BaseSound;
@@ -36,6 +34,8 @@ export default class PlayerContainer extends Phaser.GameObjects.Container {
   flipX: boolean;
 
   id: string;
+
+  healthBar: Phaser.GameObjects.Graphics;
 
   constructor(
     scene: Phaser.Scene,
@@ -62,7 +62,7 @@ export default class PlayerContainer extends Phaser.GameObjects.Container {
     this.swordHit = false;
     // Player stats
     this.maxHealth = maxHealth;
-    this.health = health;
+    this._health = health;
     this.gold = 0;
     // Player id
     this.id = id;
@@ -123,9 +123,9 @@ export default class PlayerContainer extends Phaser.GameObjects.Container {
     this.healthBar.clear();
     this.healthBar.fillStyle(0xFFFFFF, 1);
     this.healthBar.fillRect(x, y, width, thickness);
-    this.healthBar.fillGradientStyle(0x000FFF, 0xFF0000, 0x000FFF, 0xFF0000);
-    // this.healthBar.fillStyle(0x0000FF, 1);
-    this.healthBar.fillRect(x, y, width * (this._health / this.maxHealth), thickness);
+    // this.healthBar.fillGradientStyle(0x000FFF, 0xFF0000, 0x000FFF, 0xFF0000);
+    this.healthBar.fillStyle(0x0000FF);
+    this.healthBar.fillRect(x, y, width * (this.health / this.maxHealth), thickness);
   }
 
   updateHealth(delta: number) {
@@ -192,6 +192,7 @@ export default class PlayerContainer extends Phaser.GameObjects.Container {
       if (this.direction === Direction.LEFT) this.weapon.flipX = true;
     }
 
+    console.log(`Player's health: ${this.health}/${this.maxHealth}`);
     this.drawHealthBar();
   }
 }

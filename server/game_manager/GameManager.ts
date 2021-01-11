@@ -23,7 +23,7 @@ export default class GameManager {
         this.players.delete(socket.id);
 
         // emit a message to all players
-        this.io.emit('disconnect', socket.id);
+        this.io.emit('disconnected', socket.id);
       });
 
       socket.on('newPlayer', () => {
