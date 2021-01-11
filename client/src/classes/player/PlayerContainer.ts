@@ -41,7 +41,7 @@ export default class PlayerContainer extends Phaser.GameObjects.Container {
     scene: Phaser.Scene,
     x: number,
     y: number,
-    key: number,
+    key: string,
     frame: number,
     health: number,
     maxHealth: number,

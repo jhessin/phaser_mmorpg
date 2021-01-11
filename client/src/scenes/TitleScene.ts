@@ -1,6 +1,6 @@
 import 'phaser';
 import { UiButton } from '../classes';
-import { keys } from '../models';
+import { keys } from '../game_manager';
 
 export default class TitleScene extends Phaser.Scene {
   titleText: Phaser.GameObjects.Text;

@@ -1,5 +1,5 @@
 import 'phaser';
-import { keys } from '../models';
+import { keys } from '../game_manager';
 
 export default class UiScene extends Phaser.Scene {
   gameScene: Phaser.Scene;

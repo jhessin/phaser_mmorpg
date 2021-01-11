@@ -1,8 +1,7 @@
 import 'phaser';
-import { keys, randomPick } from './utils';
+import { keys, SpawnerType } from './utils';
 import {
-  PlayerContainer as Player, GameMap, Weapon,
-  Monster as Mob, Chest as Pickup,
+  PlayerContainer as Player, GameMap,
 } from '../classes';
 import {
   ChestModel, MonsterModel, Spawner, PlayerModel,
@@ -27,7 +26,7 @@ export default class GameManager {
 
   mapData: Phaser.Tilemaps.ObjectLayer[];
 
-  spawners: Map<string, Spawner>;
+  spawners: Record<SpawnerType, Spawner>;
 
   playerLocations: [number, number][];
 
@@ -51,14 +50,13 @@ export default class GameManager {
     this.mapData = this.gameMap.tilemap.objects;
 
     // An array of spawners for spawning various game objects
-    this.spawners = new Map();
     this.chests = new Map();
     this.monsters = new Map();
     this.players = new Map();
 
     this.playerLocations = [];
-    this.chestLocations = {};
-    this.monsterLocations = {};
+    this.chestLocations = [];
+    this.monsterLocations = [];
   }
 
   setup() {
@@ -80,12 +78,16 @@ export default class GameManager {
       } else if (layer.name === keys.CHEST_LAYER) {
         // Chest locations
         layer.objects.forEach((obj) => {
-          this.chestLocations.push([obj.x * 2, obj.y * 2]);
+          this.chestLocations.push(
+            [obj.x * 2, obj.y * 2],
+          );
         });
       } else if (layer.name === keys.MOB_LAYER) {
         // Mob locations
         layer.objects.forEach((obj) => {
-          this.monsterLocations.push([obj.x * 2, obj.y * 2]);
+          this.monsterLocations.push(
+            [obj.x * 2, obj.y * 2],
+          );
         });
       }
     });
@@ -105,7 +107,7 @@ export default class GameManager {
         this.scene.events.emit('updateScore', player.gold);
 
         // remove the chest
-        this.spawners.get(chest.spawnerId).removeObject(chestId);
+        this.spawners[SpawnerType.CHEST].removeObject(chestId);
         this.scene.events.emit('chestRemoved', chestId);
       }
     });
@@ -128,7 +130,7 @@ export default class GameManager {
           this.scene.events.emit('updateScore', player.gold);
 
           // remove the monster
-          this.spawners.get(monster.spawnerId).removeObject(monsterId);
+          this.spawners[SpawnerType.MONSTER].removeObject(monsterId);
           this.scene.events.emit('monsterRemoved', monsterId);
 
           // add bonus health to the player
@@ -155,111 +157,59 @@ export default class GameManager {
         }
       }
     });
+  }
 
-    this.scene.events.on('respawnPlayer', (player: Player) => {
-      const [x, y] = randomPick(this.playerLocations);
-      player.setPosition(x, y);
-    });
-
-    // Setup Audio
-    this.goldSound = this.scene.sound.add(keys.GOLD_SOUND, {
-      loop: false,
-      volume: 0.2,
-    });
-    this.playerDeathSound = this.scene.sound.add(keys.PLAYER_DEATH, {
-      loop: false,
-      volume: 0.2,
-    });
-    this.playerDamageSound = this.scene.sound.add(keys.PLAYER_DAMAGE, {
-      loop: false,
-      volume: 0.2,
-    });
-    this.playerAttackSound = this.scene.sound.add(keys.PLAYER_ATTACK, {
-      loop: false,
-      volume: 0.2,
-    });
-    this.enemyDeathSound = this.scene.sound.add(keys.ENEMY_DEATH, {
-      loop: false,
-      volume: 0.2,
-    });
-
+  setupSpawners() {
     // Setup Spawners
-    this.spawners[keys.CHEST_LAYER] = new Spawner({
-      id: 'Chest_Spawner',
-      scene: this.scene,
-      spawnIntervalTime: 3000,
-      limit: 5,
-      objectType: keys.CHEST_LAYER,
-      spawnLocations: chestLocations,
-    });
+    this.spawners = {
+      [SpawnerType.CHEST]: new Spawner({
+        id: 'Chest_Spawner',
+        spawnInterval: 3000,
+        limit: 3,
+        objectType: SpawnerType.CHEST,
+        spawnLocations: this.chestLocations,
+        addObject: this.addChest.bind(this),
+        deleteObject: this.deleteChest.bind(this),
+      }),
+      [SpawnerType.MONSTER]: new Spawner({
+        id: 'Mob_Spawner',
+        spawnInterval: 5000,
+        limit: 3,
+        objectType: SpawnerType.MONSTER,
+        spawnLocations: this.monsterLocations,
+        addObject: this.addMonster.bind(this),
+        deleteObject: this.deleteMonster.bind(this),
+        moveObjects: this.moveMonsters.bind(this),
+      }),
+    };
+  }
 
-    this.spawners[keys.MOB_LAYER] = new Spawner({
-      id: 'Mob_Spawner',
-      scene: this.scene,
-      spawnIntervalTime: 5000,
-      limit: 10,
-      objectType: keys.MOB_LAYER,
-      spawnLocations: mobLocations,
-      deathSound: this.enemyDeathSound,
-    });
-
+  spawnPlayer() {
     // Spawn Player
-    // Get a random location
-    const pos = randomPick(this.playerLocations);
-    this.player = new Player(this.scene, pos[0], pos[1], 0, this.playerAttackSound);
-
-    // setup collisions
-    // ... for map layer and player
-    this.scene.physics.add.collider(this.player, this.gameMap.blockedLayer);
-    // ... for map layer and mobs
-    this.scene.physics.add.collider(
-      this.spawners[keys.MOB_LAYER].objects,
-      this.gameMap.blockedLayer,
-    );
-
-    // ... for player weapon and mobs
-    this.scene.physics.add.overlap(
-      this.player.weapon,
-      this.spawners[keys.MOB_LAYER].objects,
-      this.enemyHit,
-      null,
-      this,
-    );
-
-    // ... for chests
-    this.scene.physics.add.overlap(
-      this.player,
-      this.spawners[keys.CHEST_LAYER].objects,
-      this.chestOverlap,
-      null,
-      this,
-    );
+    const player = new PlayerModel(this.playerLocations);
+    this.players.set(player.id, player);
+    this.scene.events.emit('spawnPlayer', player);
   }
 
-  chestOverlap(_: any, chest: Pickup) {
-    this.player.gold += chest.coins;
-    this.scene.events.emit('updateScore', this.player.gold);
-    chest.makeInactive();
-    this.goldSound.play();
+  addChest(chestId: string, chest: ChestModel) {
+    this.chests.set(chestId, chest);
+    this.scene.events.emit('chestSpawned', chest);
   }
 
-  enemyHit(weapon: Weapon, mob: Mob) {
-    if (this.player.playerAttacking && !this.player.swordHit) {
-      this.playerDamageSound.play();
-      this.player.swordHit = true;
-      weapon.attack(mob, this);
-      if (this.player.health <= 0) {
-        this.player.gold /= 2;
-        this.player.gold = Math.floor(this.player.gold);
-        this.scene.events.emit('updateScore', this.player.gold);
-        this.playerDeathSound.play();
-        this.player.respawn();
-      }
-    }
+  deleteChest(chestId: string) {
+    this.chests.delete(chestId);
   }
 
-  update() {
-    // update player input
-    this.player.update();
+  addMonster(monsterId: string, monster: MonsterModel) {
+    this.monsters.set(monsterId, monster);
+    this.scene.events.emit('monsterSpawned', monster);
+  }
+
+  deleteMonster(monsterId: string) {
+    this.monsters.delete(monsterId);
+  }
+
+  moveMonsters() {
+    this.scene.events.emit('monsterMovement', this.monsters);
   }
 }

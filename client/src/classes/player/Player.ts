@@ -1,10 +1,19 @@
 import 'phaser';
+import { v4 } from 'uuid';
 import { keys } from '../../game_manager/utils';
 
 export default class Player extends Phaser.Physics.Arcade.Image {
-  constructor(scene: Phaser.Scene, x: number, y: number, key: number, frame: number) {
-    super(scene, x, y, keys.CHARACTERS, frame);
+  id: string;
+
+  constructor(
+    scene: Phaser.Scene,
+    x: number, y: number,
+    key: string = keys.CHARACTERS,
+    frame: number = 0,
+  ) {
+    super(scene, x, y, key, frame);
     this.scene = scene;
+    this.id = v4();
 
     // enable physics
     this.scene.physics.world.enable(this);

@@ -11,8 +11,6 @@ export default class Monster extends Phaser.Physics.Arcade.Image {
 
   attack: number;
 
-  gold: number;
-
   body: Phaser.Physics.Arcade.Body;
 
   sound: Phaser.Sound.BaseSound;
@@ -24,18 +22,17 @@ export default class Monster extends Phaser.Physics.Arcade.Image {
   constructor(
     scene: Phaser.Scene,
     x: number, y: number,
-    health: number,
-    attack: number,
-    deathSound: Phaser.Sound.BaseSound,
     key: string = keys.MOBS,
     frame: number = 0,
     id: string = v4(),
+    health: number,
+    maxHealth: number = health,
   ) {
     super(scene, x, y, key, frame);
     this.scene = scene;
     this.id = id;
-    this._health = health;
-    this.maxHealth = health;
+    this.maxHealth = maxHealth;
+    this.health = health;
 
     // enable physics
     this.scene.physics.world.enable(this);
@@ -49,12 +46,6 @@ export default class Monster extends Phaser.Physics.Arcade.Image {
     this.scene.add.existing(this);
     // set the origin to bottom left to match Tiled
     this.setOrigin(0, 1);
-
-    this.attack = attack;
-    this.deathSound = deathSound;
-
-    // The gold the monster rewards
-    this.gold = randomNumber(1, 3) * (health + attack);
 
     this.drawHealthBar();
   }
