@@ -43,6 +43,8 @@ export default class BootScene extends Phaser.Scene {
   }
 
   create() {
-    this.scene.start('Title');
+    // TODO start the title scene
+    // this.scene.start('Title');
+    this.scene.start('Game');
   }
 }
