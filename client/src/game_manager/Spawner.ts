@@ -1,67 +1,64 @@
-import 'phaser';
-import { ChestModel, MonsterModel } from '.';
-import {
-  SpawnerType, randomNumber, randomPick,
-} from './utils';
-
-type Callback = (id?: string, obj?: any) => void;
+import { SpawnerType, randomNumber } from './utils';
+import ChestModel from './ChestModel';
+import MonsterModel from './MonsterModel';
 
 export type SpawnerConfig = {
-  id?: string,
-  spawnInterval?: number,
-  limit?: number,
-  objectType?: SpawnerType,
-  spawnLocations?: [number, number][],
-  addObject?: Callback,
-  deleteObject?: Callback,
-  moveObjects?: Callback;
+  spawnInterval: number,
+  limit: number,
+  spawnerType: SpawnerType,
+  id: string
 };
 
 export default class Spawner {
   id: string;
 
-  spawnIntervalTime: number;
+  spawnInterval: number;
 
   limit: number;
 
-  objectType: string;
+  objectType: SpawnerType;
 
   spawnLocations: [number, number][];
 
-  spawnInterval: NodeJS.Timeout;
+  addObject: (id: string, object: ChestModel | MonsterModel) => void;
 
-  moveInterval: NodeJS.Timeout;
+  deleteObject: (id: string) => void;
 
-  addObject: Callback;
+  moveObjects: () => void;
 
-  deleteObject: Callback;
+  objectsCreated: (ChestModel | MonsterModel)[];
 
-  moveObjects: Callback;
+  interval: NodeJS.Timeout;
 
-  objects: (ChestModel | MonsterModel)[];
+  moveMonsterInterval: NodeJS.Timeout;
 
-  constructor(config: SpawnerConfig) {
+  constructor(
+    config: SpawnerConfig,
+    spawnLocations: [number, number][],
+    addObject: (id: string, object: ChestModel | MonsterModel) => void,
+    deleteObject: (id: string) => void,
+    moveObjects?: () => void,
+  ) {
     this.id = config.id;
-    this.spawnIntervalTime = config.spawnInterval;
+    this.spawnInterval = config.spawnInterval;
     this.limit = config.limit;
-    this.objectType = config.objectType;
-    this.spawnLocations = config.spawnLocations;
-    this.addObject = config.addObject;
-    this.deleteObject = config.deleteObject;
-    this.moveObjects = config.moveObjects;
+    this.objectType = config.spawnerType;
+    this.spawnLocations = spawnLocations;
+    this.addObject = addObject;
+    this.deleteObject = deleteObject;
+    this.moveObjects = moveObjects;
 
-    this.objects = [];
-    // this.objects.runChildUpdate = true;
+    this.objectsCreated = [];
 
     this.start();
   }
 
   start() {
-    this.spawnInterval = setInterval(() => {
-      if (this.objects.length < this.limit) {
+    this.interval = setInterval(() => {
+      if (this.objectsCreated.length < this.limit) {
         this.spawnObject();
       }
-    }, this.spawnIntervalTime);
+    }, this.spawnInterval);
     if (this.objectType === SpawnerType.MONSTER) this.moveMonsters();
   }
 
@@ -76,7 +73,7 @@ export default class Spawner {
   spawnChest() {
     const location = this.pickRandomLocation();
     const chest = new ChestModel(location[0], location[1], randomNumber(10, 20), this.id);
-    this.objects.push(chest);
+    this.objectsCreated.push(chest);
     this.addObject(chest.id, chest);
   }
 
@@ -91,13 +88,13 @@ export default class Spawner {
       randomNumber(3, 5),
       1,
     );
-    this.objects.push(monster);
+    this.objectsCreated.push(monster);
     this.addObject(monster.id, monster);
   }
 
-  pickRandomLocation(): number[] {
-    const location = randomPick(this.spawnLocations);
-    const invalidLocation = this.objects.some((obj) => {
+  pickRandomLocation(): [number, number] {
+    const location = this.spawnLocations[Math.floor(Math.random() * this.spawnLocations.length)];
+    const invalidLocation = this.objectsCreated.some((obj) => {
       if (obj.x === location[0] && obj.y === location[1]) {
         return true;
       }
@@ -109,13 +106,13 @@ export default class Spawner {
   }
 
   removeObject(id: string) {
-    this.objects = this.objects.filter((obj) => obj.id !== id);
+    this.objectsCreated = this.objectsCreated.filter((obj) => obj.id !== id);
     this.deleteObject(id);
   }
 
   moveMonsters() {
-    this.moveInterval = setInterval(() => {
-      this.objects.forEach((monster: MonsterModel) => {
+    this.moveMonsterInterval = setInterval(() => {
+      this.objectsCreated.forEach((monster: MonsterModel) => {
         monster.move();
       });
 

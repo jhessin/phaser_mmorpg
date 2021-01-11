@@ -1,21 +1,18 @@
 import 'phaser';
-import { keys } from '../game_manager';
 
 export default class UiScene extends Phaser.Scene {
   gameScene: Phaser.Scene;
 
-  coinIcon: Phaser.GameObjects.Image;
-
-  gold: number;
-
   scoreText: Phaser.GameObjects.Text;
+
+  coinIcon: Phaser.GameObjects.Image;
 
   constructor() {
     super('Ui');
   }
 
   init() {
-    // grab a reference to the game scene.
+    // grab a reference to the game scene
     this.gameScene = this.scene.get('Game');
   }
 
@@ -25,20 +22,16 @@ export default class UiScene extends Phaser.Scene {
   }
 
   setupUiElements() {
-    // add a coin icon.
-    this.coinIcon = this.add.image(15, 15, keys.ITEMS, 3);
-
     // create the score text game object
-    this.scoreText = this.add.text(35, 8, 'Gold: 0', {
-      fontSize: '16px',
-      color: 'white',
-    });
+    this.scoreText = this.add.text(35, 8, 'Coins: 0', { fontSize: '16px', color: '#fff' });
+    // creaet coin icon
+    this.coinIcon = this.add.image(15, 15, 'items', 3);
   }
 
   setupEvents() {
-    // listen for update score
-    this.gameScene.events.on('updateScore', (gold: number) => {
-      this.scoreText.setText(`Gold: ${gold}`);
+    // listen for the updateScore event from the game scene
+    this.gameScene.events.on('updateScore', (score: number) => {
+      this.scoreText.setText(`Coins: ${score}`);
     });
   }
 }

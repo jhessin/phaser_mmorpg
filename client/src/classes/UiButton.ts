@@ -1,5 +1,3 @@
-import 'phaser';
-
 export default class UiButton extends Phaser.GameObjects.Container {
   key: string;
 
@@ -15,72 +13,57 @@ export default class UiButton extends Phaser.GameObjects.Container {
 
   constructor(
     scene: Phaser.Scene,
-    x: number,
-    y: number,
+    x: number, y: number,
     key: string,
     hoverKey: string,
     text: string,
     targetCallback: () => void,
   ) {
     super(scene, x, y);
-    // The scene the button belongs to.
-    this.scene = scene;
-
-    // The position of the button.
-    this.x = x;
-    this.y = y;
-
-    // The key for the background image of the button.
-    this.key = key;
-
-    // The key for the image displayed on hover.
+    this.scene = scene; // the scene this container will be added to
+    this.x = x; // the x position of our container
+    this.y = y; // the y position of our container
+    this.key = key; // the background image of our button
+    // the image that will be displayed when the player hovers over the button
     this.hoverKey = hoverKey;
-
-    // The text to display on the button
-    this.text = text;
-
-    // the callback to handle when the button is clicked.
+    this.text = text; // the text that will be displayed on the button
+    // the callback function that will be called when the player clicks the button
     this.targetCallback = targetCallback;
 
-    // create the button
+    // create our Ui Button
     this.createButton();
-
-    // add the container to the scene.
+    // add this container to our Phaser Scene
     this.scene.add.existing(this);
   }
 
   createButton() {
-    // Create the button
-    // this.button = new Phaser.GameObjects.Image(this.scene, 0, 0, this.key);
-    this.button = this.scene.add.image(0, 0, this.key);
-    // add interactivity
+    // create play game button
+    this.button = this.scene.add.image(0, 0, 'button1');
+    // make button interactive
     this.button.setInteractive();
-    // blow it up!
+    // scale the button
     this.button.setScale(1.4);
 
-    // create the text
-    this.buttonText = this.scene.add.text(0, 0, this.text, {
-      fontSize: '26px',
-      color: '#fff',
-    });
-    // Center the text in the button if necessary?
+    // create the button text
+    this.buttonText = this.scene.add.text(0, 0, this.text, { fontSize: '26px', color: '#fff' });
+    // center the button text inside the Ui button
     Phaser.Display.Align.In.Center(this.buttonText, this.button);
 
-    // add the two game objects to the container.
+    // add the two game objects to our container
     this.add(this.button);
     this.add(this.buttonText);
 
+    // listen for events
     this.button.on('pointerdown', () => {
-      // TODO: animate this
+      this.targetCallback();
     });
+
     this.button.on('pointerover', () => {
       this.button.setTexture(this.hoverKey);
     });
+
     this.button.on('pointerout', () => {
       this.button.setTexture(this.key);
-    });
-    this.button.on('pointerup', () => {
-      this.targetCallback();
     });
   }
 }

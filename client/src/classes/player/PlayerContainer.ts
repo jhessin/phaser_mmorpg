@@ -1,177 +1,143 @@
-import 'phaser';
 import Player from './Player';
-import PlayerObject from '../../game_manager/PlayerModel';
-import Weapon from './Weapon';
 import { Direction } from '../../utils/direction';
+import { PlayerModel } from '../../game_manager';
 
 export default class PlayerContainer extends Phaser.GameObjects.Container {
-  public scene: Phaser.Scene;
-
-  cursors: Phaser.Types.Input.Keyboard.CursorKeys;
-
-  gold: number;
+  body: Phaser.Physics.Arcade.Body;
 
   velocity: number;
 
+  currentDirection: Direction;
+
   playerAttacking: boolean;
-
-  private _health: number;
-
-  maxHealth: number;
-
-  swordHit: boolean;
-
-  direction: Direction;
-
-  player: Player;
-
-  weapon: Weapon;
-
-  body: Phaser.Physics.Arcade.Body;
-
-  attackSound: Phaser.Sound.BaseSound;
 
   flipX: boolean;
 
+  swordHit: boolean;
+
+  health: number;
+
+  maxHealth: number;
+
   id: string;
+
+  attackAudio: Phaser.Sound.BaseSound;
+
+  player: Player;
+
+  weapon: Phaser.GameObjects.Image;
 
   healthBar: Phaser.GameObjects.Graphics;
 
   constructor(
     scene: Phaser.Scene,
-    x: number,
-    y: number,
+    x: number, y: number,
     key: string,
     frame: number,
     health: number,
     maxHealth: number,
     id: string,
-    attackSound: Phaser.Sound.BaseSound,
+    attackAudio: Phaser.Sound.BaseSound,
   ) {
     super(scene, x, y);
-    // the scene this container will be added to
-    this.scene = scene;
-    // set velocity
-    this.velocity = 160;
-    // direction player is facing
-    this.direction = Direction.RIGHT;
-    // Track if player is attacking
+    this.scene = scene; // the scene this container will be added to
+    this.velocity = 160; // the velocity when moving our player
+    this.currentDirection = Direction.RIGHT;
     this.playerAttacking = false;
     this.flipX = true;
-    // Track if sword has hit
     this.swordHit = false;
-    // Player stats
+    this.health = health;
     this.maxHealth = maxHealth;
-    this._health = health;
-    this.gold = 0;
-    // Player id
     this.id = id;
-    this.attackSound = attackSound;
+    this.attackAudio = attackAudio;
 
-    // set a size for the container
+    // set a size on the container
     this.setSize(64, 64);
     // enable physics
     this.scene.physics.world.enable(this);
     // collide with world bounds
     this.body.setCollideWorldBounds(true);
-    // add the player to the scene.
+    // add the player container to our existing scene
     this.scene.add.existing(this);
     // have the camera follow the player
     this.scene.cameras.main.startFollow(this);
 
-    // create a player
+    // create the player
     this.player = new Player(this.scene, 0, 0, key, frame);
     this.add(this.player);
 
-    // create the weapon
-    this.weapon = new Weapon(this);
+    // create the weapon game object
+    this.weapon = this.scene.add.image(40, 0, 'items', 4);
+    this.scene.add.existing(this.weapon);
+    this.weapon.setScale(1.5);
+    this.scene.physics.world.enable(this.weapon);
+    this.add(this.weapon);
+    this.weapon.alpha = 0;
 
-    // Draw the healthBar
-    this.drawHealthBar();
-
-    // Cursor for character movement
-    this.cursors = scene.input.keyboard.createCursorKeys();
+    // create the player healthbar
+    this.createHealthBar();
   }
 
-  get health(): number {
-    return this._health;
+  createHealthBar() {
+    this.healthBar = this.scene.add.graphics();
+    this.updateHealthBar();
   }
 
-  set health(value: number) {
-    if (value >= this.maxHealth) {
-      this._health = this.maxHealth;
-    } else if (value <= 0) {
-      this._health = 0;
-    } else {
-      this._health = value;
-    }
-  }
-
-  faceRight(flag: boolean) {
-    this.player.flipX = flag;
-  }
-
-  drawHealthBar() {
-    // Create a health bar
-    if (!this.healthBar) {
-      this.healthBar = this.scene.add.graphics();
-    }
-    const x = this.x - (this.displayWidth / 2);
-    const y = this.y - (this.displayHeight / 2) - 8;
-    const width = 64;
-    const thickness = 5;
+  updateHealthBar() {
     this.healthBar.clear();
-    this.healthBar.fillStyle(0xFFFFFF, 1);
-    this.healthBar.fillRect(x, y, width, thickness);
-    // this.healthBar.fillGradientStyle(0x000FFF, 0xFF0000, 0x000FFF, 0xFF0000);
-    this.healthBar.fillStyle(0x0000FF);
-    this.healthBar.fillRect(x, y, width * (this.health / this.maxHealth), thickness);
+    this.healthBar.fillStyle(0xffffff, 1);
+    this.healthBar.fillRect(this.x - 32, this.y - 40, 64, 5);
+    // this.healthBar.fillGradientStyle(0xff0000, 0xffffff, 4);
+    this.healthBar.fillStyle(0xFF0000, 1);
+    this.healthBar.fillRect(this.x - 32, this.y - 40, 64 * (this.health / this.maxHealth), 5);
   }
 
-  updateHealth(delta: number) {
-    this.health += delta;
+  updateHealth(health: number) {
+    this.health = health;
+    this.updateHealthBar();
   }
 
-  respawn(playerObject: PlayerObject) {
+  respawn(playerObject: PlayerModel) {
     this.health = playerObject.health;
-    this.scene.events.emit('respawnPlayer', this);
-    this.drawHealthBar();
+    this.setPosition(playerObject.x, playerObject.y);
+    this.updateHealthBar();
   }
 
-  update() {
+  // TODO: Change this to the proper type
+  update(cursors: any) {
     this.body.setVelocity(0);
 
-    if (this.cursors.left.isDown) {
+    if (cursors.left.isDown) {
       this.body.setVelocityX(-this.velocity);
-      this.direction = Direction.LEFT;
+      this.currentDirection = Direction.LEFT;
       this.weapon.setPosition(-40, 0);
-      this.faceRight(false);
-    } else if (this.cursors.right.isDown) {
+      this.player.flipX = false;
+    } else if (cursors.right.isDown) {
       this.body.setVelocityX(this.velocity);
-      this.direction = Direction.RIGHT;
+      this.currentDirection = Direction.RIGHT;
       this.weapon.setPosition(40, 0);
-      this.faceRight(true);
+      this.player.flipX = true;
     }
 
-    if (this.cursors.up.isDown) {
+    if (cursors.up.isDown) {
       this.body.setVelocityY(-this.velocity);
-      this.direction = Direction.UP;
+      this.currentDirection = Direction.UP;
       this.weapon.setPosition(0, -40);
-    } else if (this.cursors.down.isDown) {
+    } else if (cursors.down.isDown) {
       this.body.setVelocityY(this.velocity);
-      this.direction = Direction.DOWN;
+      this.currentDirection = Direction.DOWN;
       this.weapon.setPosition(0, 40);
     }
 
-    if (Phaser.Input.Keyboard.JustDown(this.cursors.space) && !this.playerAttacking) {
-      this.playerAttacking = true;
-      this.attackSound.play();
+    if (Phaser.Input.Keyboard.JustDown(cursors.space) && !this.playerAttacking) {
       this.weapon.alpha = 1;
+      this.playerAttacking = true;
+      this.attackAudio.play();
       this.scene.time.delayedCall(150, () => {
         this.weapon.alpha = 0;
         this.playerAttacking = false;
         this.swordHit = false;
-      });
+      }, [], this);
     }
 
     if (this.playerAttacking) {
@@ -181,18 +147,20 @@ export default class PlayerContainer extends Phaser.GameObjects.Container {
         this.weapon.angle += 10;
       }
     } else {
-      if (this.direction === Direction.DOWN) {
+      if (this.currentDirection === Direction.DOWN) {
         this.weapon.setAngle(-270);
-      } else if (this.direction === Direction.UP) {
+      } else if (this.currentDirection === Direction.UP) {
         this.weapon.setAngle(-90);
       } else {
         this.weapon.setAngle(0);
       }
+
       this.weapon.flipX = false;
-      if (this.direction === Direction.LEFT) this.weapon.flipX = true;
+      if (this.currentDirection === Direction.LEFT) {
+        this.weapon.flipX = true;
+      }
     }
 
-    console.log(`Player's health: ${this.health}/${this.maxHealth}`);
-    this.drawHealthBar();
+    this.updateHealthBar();
   }
 }

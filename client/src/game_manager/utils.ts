@@ -1,24 +1,4 @@
 // setup Keys
-export const keys = {
-  BUTTON1: 'button1',
-  BUTTON2: 'button2',
-  ITEMS: 'items',
-  CHARACTERS: 'characters',
-  MOBS: 'monsters',
-  GOLD_SOUND: 'goldsound',
-  ENEMY_DEATH: 'enemyDeath',
-  PLAYER_ATTACK: 'playerAttack',
-  PLAYER_DAMAGE: 'playerDamage',
-  PLAYER_DEATH: 'playerDeath',
-  MAP: 'map',
-  TILE_SET_NAME: 'background',
-  BACKGROUND: 'background',
-  BLOCKED: 'blocked',
-  PLAYER_LAYER: 'player_locations',
-  CHEST_LAYER: 'chest_locations',
-  MOB_LAYER: 'monster_locations',
-};
-
 export enum SpawnerType {
   MONSTER = 'MONSTER',
   CHEST = 'CHEST',
@@ -43,8 +23,8 @@ export function randomPick(arr: Array<any>) {
 }
 
 export default {
-  keys,
   getTiledProperty,
   randomNumber,
   randomPick,
+  SpawnerType,
 };

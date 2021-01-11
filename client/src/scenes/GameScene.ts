@@ -1,19 +1,12 @@
 import 'phaser';
+import PlayerContainer from '../classes/player/PlayerContainer';
+import GameManager, { ChestModel, MonsterModel, PlayerModel } from '../game_manager';
+
 import {
-  Player, PlayerContainer, Chest, Monster, GameMap, Weapon,
+  Chest, GameMap, Monster,
 } from '../classes';
-import GameManager, {
-  ChestModel, keys, MonsterModel, PlayerModel,
-} from '../game_manager';
-import Game from '../game';
 
 export default class GameScene extends Phaser.Scene {
-  gameManager: GameManager;
-
-  socket: SocketIOClient.Socket;
-
-  player: PlayerContainer;
-
   goldPickupAudio: Phaser.Sound.BaseSound;
 
   playerAttackAudio: Phaser.Sound.BaseSound;
@@ -24,73 +17,45 @@ export default class GameScene extends Phaser.Scene {
 
   monsterDeathAudio: Phaser.Sound.BaseSound;
 
+  player: PlayerContainer;
+
   chests: Phaser.Physics.Arcade.Group;
 
   monsters: Phaser.Physics.Arcade.Group;
 
   cursors: Phaser.Types.Input.Keyboard.CursorKeys;
 
-  gameMap: GameMap;
+  gameMap: any;
+
+  gameManager: GameManager;
 
   constructor() {
     super('Game');
   }
 
   init() {
-    // Run the ui on top of the game scene.
     this.scene.launch('Ui');
-
-    // get a reference to our socket
-    const game = this.sys.game as Game;
-    this.socket = game.globals.socket;
-
-    // listen for socket events
-    this.listenForSocketEvents();
   }
 
-  listenForSocketEvents() {
-    this.socket.on('newPlayer', (socketId: string, msg: string) => {
-      console.log('new player event', socketId, 'sent from: ', msg);
-    });
-  }
-
-  // Create assets
   create() {
     this.createMap();
     this.createAudio();
     this.createGroups();
     this.createInput();
-    this.createGameManager();
 
-    // emit an event to server that a new player joined
-    this.socket.emit('newPlayer', { test: 1234 });
+    this.createGameManager();
   }
 
   update() {
-    if (this.player) this.player.update();
+    if (this.player) this.player.update(this.cursors);
   }
 
   createAudio() {
-    this.goldPickupAudio = this.sound.add(keys.GOLD_SOUND, {
-      loop: false,
-      volume: 0.3,
-    });
-    this.playerAttackAudio = this.sound.add(keys.PLAYER_ATTACK, {
-      loop: false,
-      volume: 0.01,
-    });
-    this.playerDamageAudio = this.sound.add(keys.PLAYER_DAMAGE, {
-      loop: false,
-      volume: 0.2,
-    });
-    this.playerDeathAudio = this.sound.add(keys.PLAYER_DEATH, {
-      loop: false,
-      volume: 0.2,
-    });
-    this.monsterDeathAudio = this.sound.add(keys.ENEMY_DEATH, {
-      loop: false,
-      volume: 0.2,
-    });
+    this.goldPickupAudio = this.sound.add('goldSound', { loop: false, volume: 0.3 });
+    this.playerAttackAudio = this.sound.add('playerAttack', { loop: false, volume: 0.01 });
+    this.playerDamageAudio = this.sound.add('playerDamage', { loop: false, volume: 0.2 });
+    this.playerDeathAudio = this.sound.add('playerDeath', { loop: false, volume: 0.2 });
+    this.monsterDeathAudio = this.sound.add('enemyDeath', { loop: false, volume: 0.2 });
   }
 
   createPlayer(playerObject: PlayerModel) {
@@ -98,7 +63,7 @@ export default class GameScene extends Phaser.Scene {
       this,
       playerObject.x * 2,
       playerObject.y * 2,
-      keys.CHARACTERS,
+      'characters',
       0,
       playerObject.health,
       playerObject.maxHealth,
@@ -110,22 +75,15 @@ export default class GameScene extends Phaser.Scene {
   createGroups() {
     // create a chest group
     this.chests = this.physics.add.group();
-
-    // create a monster Group
+    // create a monster group
     this.monsters = this.physics.add.group();
+    this.monsters.runChildUpdate = true;
   }
 
   spawnChest(chestObject: ChestModel) {
     let chest = this.chests.getFirstDead();
     if (!chest) {
-      chest = new Chest(
-        this,
-        chestObject.x * 2,
-        chestObject.y * 2,
-        keys.ITEMS,
-        0, chestObject.gold,
-        chestObject.id,
-      );
+      chest = new Chest(this, chestObject.x * 2, chestObject.y * 2, 'items', 0, chestObject.gold, chestObject.id);
       // add chest to chests group
       this.chests.add(chest);
     } else {
@@ -141,23 +99,22 @@ export default class GameScene extends Phaser.Scene {
     if (!monster) {
       monster = new Monster(
         this,
-        // monsterObject.x * 2,
-        // monsterObject.y * 2,
         monsterObject.x,
         monsterObject.y,
-        keys.MOBS,
+        'monsters',
         monsterObject.frame,
         monsterObject.id,
         monsterObject.health,
         monsterObject.maxHealth,
       );
+      // add monster to monsters group
       this.monsters.add(monster);
     } else {
       monster.id = monsterObject.id;
       monster.health = monsterObject.health;
       monster.maxHealth = monsterObject.maxHealth;
-      monster.setTexture(keys.MOBS, monsterObject.frame);
-      monster.setPosition(monsterObject.x * 2, monsterObject.y * 2);
+      monster.setTexture('monsters', monsterObject.frame);
+      monster.setPosition(monsterObject.x, monsterObject.y);
       monster.makeActive();
     }
   }
@@ -169,38 +126,30 @@ export default class GameScene extends Phaser.Scene {
   addCollisions() {
     // check for collisions between the player and the tiled blocked layer
     this.physics.add.collider(this.player, this.gameMap.blockedLayer);
-
-    // check for overlaps between player and chest
+    // check for overlaps between player and chest game objects
     this.physics.add.overlap(this.player, this.chests, this.collectChest, null, this);
-
-    // check for collesions between the monsters and the tiled blocked layer
+    // check for collisions between the monster group and the tiled blocked layer
     this.physics.add.collider(this.monsters, this.gameMap.blockedLayer);
-
-    // check for overlaps between the player's weapon and the monster game objects
+    // check for overlaps between the player's weapon and monster game objects
     this.physics.add.overlap(this.player.weapon, this.monsters, this.enemyOverlap, null, this);
   }
 
-  enemyOverlap(_weapon: Weapon, enemy: Monster) {
+  enemyOverlap(_: any, enemy: Monster) {
     if (this.player.playerAttacking && !this.player.swordHit) {
       this.player.swordHit = true;
       this.events.emit('monsterAttacked', enemy.id, this.player.id);
     }
   }
 
-  collectChest(player: Player, chest: Chest) {
+  collectChest(player: PlayerContainer, chest: Chest) {
     // play gold pickup sound
     this.goldPickupAudio.play();
     this.events.emit('pickUpChest', chest.id, player.id);
   }
 
   createMap() {
-    this.gameMap = new GameMap(
-      this,
-      keys.MAP,
-      keys.BACKGROUND,
-      keys.BACKGROUND,
-      keys.BLOCKED,
-    );
+    // create map
+    this.gameMap = new GameMap(this, 'map', 'background', 'background', 'blocked');
   }
 
   createGameManager() {
@@ -242,17 +191,18 @@ export default class GameScene extends Phaser.Scene {
       });
     });
 
-    this.events.on('monsterMovement', (monsters: Map<string, MonsterModel>) => {
+    // TODO: No more any!
+    this.events.on('monsterMovement', (monsters: any) => {
       this.monsters.getChildren().forEach((monster: Monster) => {
-        Object.keys(monsters).forEach((monsterId: string) => {
+        Object.keys(monsters).forEach((monsterId) => {
           if (monster.id === monsterId) {
-            this.physics.moveToObject(monster, monsters.get(monsterId), 40);
+            this.physics.moveToObject(monster, monsters[monsterId], 40);
           }
         });
       });
     });
 
-    this.events.on('updatePlayerHealth', (playerId: string, health: number) => {
+    this.events.on('updatePlayerHealth', (_playerId: string, health: number) => {
       if (health < this.player.health) {
         this.playerDamageAudio.play();
       }
@@ -264,8 +214,7 @@ export default class GameScene extends Phaser.Scene {
       this.player.respawn(playerObject);
     });
 
-    // setup the game manager
-    this.gameManager = new GameManager(this);
+    this.gameManager = new GameManager(this, this.gameMap.tilemap.objects);
     this.gameManager.setup();
   }
 }

@@ -2,11 +2,9 @@ import { v4 } from 'uuid';
 import { randomNumber } from './utils';
 
 export default class MonsterModel {
-  health: number;
+  id: string;
 
   spawnerId: string;
-
-  id: string;
 
   x: number;
 
@@ -16,13 +14,14 @@ export default class MonsterModel {
 
   frame: number;
 
+  health: number;
+
   maxHealth: number;
 
   attack: number;
 
   constructor(
-    x: number,
-    y: number,
+    x: number, y: number,
     gold: number,
     spawnerId: string,
     frame: number,
@@ -78,6 +77,7 @@ export default class MonsterModel {
         this.y -= distance;
         break;
       default:
+        break;
     }
   }
 }
