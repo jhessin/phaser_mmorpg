@@ -71,8 +71,21 @@ export default class GameManager {
         this.io.emit('newPlayer', this.players.get(socket.id));
       });
 
-      console.log('player connected to our game');
-      console.log(socket.id);
+      socket.on('playerMovement', (playerData: {
+        x: number,
+        y: number,
+        flipX: boolean,
+      }) => {
+        const player = this.players.get(socket.id);
+        if (player) {
+          player.x = playerData.x;
+          player.y = playerData.y;
+          player.flipX = playerData.flipX;
+
+          // emit a message to other players about the player that moved
+          socket.broadcast.emit('playerMoved', player);
+        }
+      });
     });
   }
 
@@ -82,8 +95,5 @@ export default class GameManager {
   spawnPlayer(id: string) {
     const player = new PlayerModel(id, this.playerLocations);
     this.players.set(player.id, player);
-    console.log('Player spawned');
-    console.log(player);
-    console.log(JSON.stringify(this.players));
   }
 }

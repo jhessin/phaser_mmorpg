@@ -11,8 +11,6 @@ export default class PlayerContainer extends Phaser.GameObjects.Container {
 
   playerAttacking: boolean;
 
-  flipX: boolean;
-
   swordHit: boolean;
 
   health: number;
@@ -30,6 +28,8 @@ export default class PlayerContainer extends Phaser.GameObjects.Container {
   healthBar: Phaser.GameObjects.Graphics;
 
   mainPlayer: boolean;
+
+  oldPosition?: { x: number; y: number; flipX: boolean; };
 
   constructor(
     scene: Phaser.Scene,
@@ -82,6 +82,14 @@ export default class PlayerContainer extends Phaser.GameObjects.Container {
 
     // create the player healthbar
     this.createHealthBar();
+  }
+
+  set flipX(value: boolean) {
+    if (this.player) this.player.flipX = value;
+  }
+
+  get flipX(): boolean {
+    return this.player ? this.player.flipX : false;
   }
 
   createHealthBar() {

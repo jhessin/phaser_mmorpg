@@ -51,15 +51,19 @@ export default class GameScene extends Phaser.Scene {
   listenForSocketEvents() {
     // spawn player game objects
     this.socket.on('currentPlayers', (players: Record<string, PlayerModel>) => {
-      console.log('currentPlayers');
-      console.log(players);
       Object.keys(players).forEach((id) => {
         if (players[id].id === this.socket.id) {
           this.createPlayer(players[id], true);
+          this.addCollisions();
         } else {
           this.createPlayer(players[id], false);
         }
       });
+    });
+
+    // remove disconnected players
+    this.socket.on('disconnected', (id: string) => {
+      console.log(`player disconnected ${id}`);
     });
 
     // spawn monster game objects
@@ -75,9 +79,90 @@ export default class GameScene extends Phaser.Scene {
     });
 
     // spawn player game objects
-    this.socket.on('newPlayer', (player: PlayerModel) => {
-      console.log('new player: ', player);
+    this.socket.on('spawnPlayer', (player: PlayerModel) => {
+      this.createPlayer(player, false);
     });
+
+    // listen for movement events
+    this.socket.on('playerMoved', (player: PlayerModel) => {
+      let found = false;
+      this.otherPlayers.getChildren().forEach((otherPlayer: PlayerContainer) => {
+        if (player.id === otherPlayer.id) {
+          found = true;
+          otherPlayer.flipX = player.flipX;
+          otherPlayer.setPosition(player.x, player.y);
+          otherPlayer.updateHealthBar();
+        }
+      });
+      if (!found) {
+        this.createPlayer(player, false);
+      }
+    });
+  }
+
+  createGameManager() {
+    // this.events.on('spawnPlayer', (playerObject: PlayerModel) => {
+    //   this.createPlayer(playerObject, true);
+    //   this.addCollisions();
+    // });
+
+    this.events.on('chestSpawned', (chest: ChestModel) => {
+      this.spawnChest(chest);
+    });
+
+    this.events.on('monsterSpawned', (monster: MonsterModel) => {
+      this.spawnMonster(monster);
+    });
+
+    this.events.on('chestRemoved', (chestId: string) => {
+      this.chests.getChildren().forEach((chest: Chest) => {
+        if (chest.id === chestId) {
+          chest.makeInactive();
+        }
+      });
+    });
+
+    this.events.on('monsterRemoved', (monsterId: string) => {
+      this.monsters.getChildren().forEach((monster: Monster) => {
+        if (monster.id === monsterId) {
+          monster.makeInactive();
+          this.monsterDeathAudio.play();
+        }
+      });
+    });
+
+    this.events.on('updateMonsterHealth', (monsterId: string, health: number) => {
+      this.monsters.getChildren().forEach((monster: Monster) => {
+        if (monster.id === monsterId) {
+          monster.updateHealth(health);
+        }
+      });
+    });
+
+    this.events.on('monsterMovement', (monsters: Map<string, MonsterModel>) => {
+      this.monsters.getChildren().forEach((monster: Monster) => {
+        Object.keys(monsters).forEach((monsterId: string) => {
+          if (monster.id === monsterId) {
+            this.physics.moveToObject(monster, monsters.get(monsterId), 40);
+          }
+        });
+      });
+    });
+
+    this.events.on('updatePlayerHealth', (_playerId: string, health: number) => {
+      if (health < this.player.health) {
+        this.playerDamageAudio.play();
+      }
+      this.player.updateHealth(health);
+    });
+
+    this.events.on('respawnPlayer', (playerObject: PlayerModel) => {
+      this.playerDeathAudio.play();
+      this.player.respawn(playerObject);
+    });
+
+    this.gameManager = new GameManager(this, this.gameMap.tilemap.objects);
+    this.gameManager.setup();
   }
 
   create() {
@@ -94,6 +179,22 @@ export default class GameScene extends Phaser.Scene {
 
   update() {
     if (this.player) this.player.update(this.cursors);
+
+    if (this.player) {
+      // emit player movement to the server
+      const { x, y, flipX } = this.player;
+      if (this.player.oldPosition
+        && (x !== this.player.oldPosition.x
+          || y !== this.player.oldPosition.y
+          || flipX !== this.player.oldPosition.flipX)) {
+        this.socket.emit('playerMovement', { x, y, flipX });
+      }
+
+      // save old position data
+      this.player.oldPosition = {
+        x, y, flipX,
+      };
+    }
   }
 
   createAudio() {
@@ -206,70 +307,5 @@ export default class GameScene extends Phaser.Scene {
   createMap() {
     // create map
     this.gameMap = new GameMap(this, 'map', 'background', 'background', 'blocked');
-  }
-
-  createGameManager() {
-    this.events.on('spawnPlayer', (playerObject: PlayerModel) => {
-      this.createPlayer(playerObject, true);
-      this.addCollisions();
-    });
-
-    this.events.on('chestSpawned', (chest: ChestModel) => {
-      this.spawnChest(chest);
-    });
-
-    this.events.on('monsterSpawned', (monster: MonsterModel) => {
-      this.spawnMonster(monster);
-    });
-
-    this.events.on('chestRemoved', (chestId: string) => {
-      this.chests.getChildren().forEach((chest: Chest) => {
-        if (chest.id === chestId) {
-          chest.makeInactive();
-        }
-      });
-    });
-
-    this.events.on('monsterRemoved', (monsterId: string) => {
-      this.monsters.getChildren().forEach((monster: Monster) => {
-        if (monster.id === monsterId) {
-          monster.makeInactive();
-          this.monsterDeathAudio.play();
-        }
-      });
-    });
-
-    this.events.on('updateMonsterHealth', (monsterId: string, health: number) => {
-      this.monsters.getChildren().forEach((monster: Monster) => {
-        if (monster.id === monsterId) {
-          monster.updateHealth(health);
-        }
-      });
-    });
-
-    this.events.on('monsterMovement', (monsters: Map<string, MonsterModel>) => {
-      this.monsters.getChildren().forEach((monster: Monster) => {
-        Object.keys(monsters).forEach((monsterId: string) => {
-          if (monster.id === monsterId) {
-            this.physics.moveToObject(monster, monsters.get(monsterId), 40);
-          }
-        });
-      });
-    });
-
-    this.events.on('updatePlayerHealth', (_playerId: string, health: number) => {
-      if (health < this.player.health) {
-        this.playerDamageAudio.play();
-      }
-      this.player.updateHealth(health);
-    });
-
-    this.events.on('respawnPlayer', (playerObject: PlayerModel) => {
-      this.playerDeathAudio.play();
-      this.player.respawn(playerObject);
-    });
-
-    this.gameManager = new GameManager(this, this.gameMap.tilemap.objects);
-    this.gameManager.setup();
   }
 }
