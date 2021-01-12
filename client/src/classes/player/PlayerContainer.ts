@@ -29,6 +29,8 @@ export default class PlayerContainer extends Phaser.GameObjects.Container {
 
   healthBar: Phaser.GameObjects.Graphics;
 
+  mainPlayer: boolean;
+
   constructor(
     scene: Phaser.Scene,
     x: number, y: number,
@@ -38,6 +40,7 @@ export default class PlayerContainer extends Phaser.GameObjects.Container {
     maxHealth: number,
     id: string,
     attackAudio: Phaser.Sound.BaseSound,
+    mainPlayer: boolean = false,
   ) {
     super(scene, x, y);
     this.scene = scene; // the scene this container will be added to
@@ -50,6 +53,7 @@ export default class PlayerContainer extends Phaser.GameObjects.Container {
     this.maxHealth = maxHealth;
     this.id = id;
     this.attackAudio = attackAudio;
+    this.mainPlayer = mainPlayer;
 
     // set a size on the container
     this.setSize(64, 64);
@@ -59,8 +63,10 @@ export default class PlayerContainer extends Phaser.GameObjects.Container {
     this.body.setCollideWorldBounds(true);
     // add the player container to our existing scene
     this.scene.add.existing(this);
-    // have the camera follow the player
-    this.scene.cameras.main.startFollow(this);
+    if (this.mainPlayer) {
+      // have the camera follow the player
+      this.scene.cameras.main.startFollow(this);
+    }
 
     // create the player
     this.player = new Player(this.scene, 0, 0, key, frame);
@@ -103,7 +109,6 @@ export default class PlayerContainer extends Phaser.GameObjects.Container {
     this.updateHealthBar();
   }
 
-  // TODO: Change this to the proper type
   update(cursors: Phaser.Types.Input.Keyboard.CursorKeys) {
     this.body.setVelocity(0);
 
