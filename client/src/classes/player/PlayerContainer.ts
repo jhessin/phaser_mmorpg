@@ -104,7 +104,7 @@ export default class PlayerContainer extends Phaser.GameObjects.Container {
   }
 
   // TODO: Change this to the proper type
-  update(cursors: any) {
+  update(cursors: Phaser.Types.Input.Keyboard.CursorKeys) {
     this.body.setVelocity(0);
 
     if (cursors.left.isDown) {

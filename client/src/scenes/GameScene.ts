@@ -1,9 +1,8 @@
 import 'phaser';
-import PlayerContainer from '../classes/player/PlayerContainer';
 import GameManager, { ChestModel, MonsterModel, PlayerModel } from '../game_manager';
 
 import {
-  Chest, GameMap, Monster,
+  Chest, GameMap, Monster, PlayerContainer,
 } from '../classes';
 
 export default class GameScene extends Phaser.Scene {
@@ -25,7 +24,7 @@ export default class GameScene extends Phaser.Scene {
 
   cursors: Phaser.Types.Input.Keyboard.CursorKeys;
 
-  gameMap: any;
+  gameMap: GameMap;
 
   gameManager: GameManager;
 
