@@ -1,11 +1,14 @@
 import 'phaser';
 import GameManager, { ChestModel, MonsterModel, PlayerModel } from '../game_manager';
+import Game from '../game';
 
 import {
   Chest, GameMap, Monster, PlayerContainer,
 } from '../classes';
 
 export default class GameScene extends Phaser.Scene {
+  socket: SocketIOClient.Socket;
+
   goldPickupAudio: Phaser.Sound.BaseSound;
 
   playerAttackAudio: Phaser.Sound.BaseSound;
@@ -34,6 +37,19 @@ export default class GameScene extends Phaser.Scene {
 
   init() {
     this.scene.launch('Ui');
+
+    // get a reference to our socket
+    const game = this.sys.game as Game;
+    this.socket = game.globals.socket;
+
+    // Listen for socket events
+    this.listenForSocketEvents();
+  }
+
+  listenForSocketEvents() {
+    this.socket.on('newPlayer', (socketId: string) => {
+      console.log('new player event', socketId);
+    });
   }
 
   create() {
@@ -42,7 +58,10 @@ export default class GameScene extends Phaser.Scene {
     this.createGroups();
     this.createInput();
 
-    this.createGameManager();
+    // this.createGameManager();
+
+    // emit event to server that a new player joined
+    this.socket.emit('newPlayer', { test: 1234 });
   }
 
   update() {
