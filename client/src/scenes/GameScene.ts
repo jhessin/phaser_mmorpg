@@ -5,6 +5,7 @@ import Game from '../game';
 import {
   Chest, GameMap, Monster, PlayerContainer,
 } from '../classes';
+import { PlayerData } from '../utils/types';
 
 export default class GameScene extends Phaser.Scene {
   socket: SocketIOClient.Socket;
@@ -62,19 +63,24 @@ export default class GameScene extends Phaser.Scene {
     });
 
     // remove disconnected players
-    this.socket.on('disconnected', (id: string) => {
+    this.socket.on('disconnectPlayer', (id: string) => {
+      // eslint-disable-next-line no-console
       console.log(`player disconnected ${id}`);
     });
 
     // spawn monster game objects
     this.socket.on('currentMonsters', (monsters: Record<string, MonsterModel>) => {
+      // eslint-disable-next-line no-console
       console.log('current monsters:');
+      // eslint-disable-next-line no-console
       console.log(monsters);
     });
 
     // spawn chest game objects
     this.socket.on('currentChests', (chests: Record<string, ChestModel>) => {
+      // eslint-disable-next-line no-console
       console.log('current chests:');
+      // eslint-disable-next-line no-console
       console.log(chests);
     });
 
@@ -84,19 +90,19 @@ export default class GameScene extends Phaser.Scene {
     });
 
     // listen for movement events
-    this.socket.on('playerMoved', (player: PlayerModel) => {
-      let found = false;
+    this.socket.on('playerMoved', (player: PlayerData) => {
       this.otherPlayers.getChildren().forEach((otherPlayer: PlayerContainer) => {
         if (player.id === otherPlayer.id) {
-          found = true;
+          otherPlayer.updateHealthBar();
           otherPlayer.flipX = player.flipX;
           otherPlayer.setPosition(player.x, player.y);
-          otherPlayer.updateHealthBar();
+          if (player.playerAttacking && !otherPlayer.playerAttacking) {
+            otherPlayer.playerAttacking = player.playerAttacking;
+            otherPlayer.attack();
+          }
+          otherPlayer.currentDirection = player.currentDirection;
         }
       });
-      if (!found) {
-        this.createPlayer(player, false);
-      }
     });
   }
 
@@ -182,17 +188,39 @@ export default class GameScene extends Phaser.Scene {
 
     if (this.player) {
       // emit player movement to the server
-      const { x, y, flipX } = this.player;
+      const {
+        id,
+        x, y,
+        flipX,
+        playerAttacking,
+        currentDirection,
+      } = this.player;
       if (this.player.oldPosition
         && (x !== this.player.oldPosition.x
           || y !== this.player.oldPosition.y
-          || flipX !== this.player.oldPosition.flipX)) {
-        this.socket.emit('playerMovement', { x, y, flipX });
+          || flipX !== this.player.oldPosition.flipX
+          || playerAttacking !== this.player.oldPosition.playerAttacking
+          || currentDirection !== this.player.oldPosition.currentDirection
+        )) {
+        const playerData: PlayerData = {
+          id,
+          x,
+          y,
+          flipX,
+          playerAttacking,
+          currentDirection,
+        };
+        this.socket.emit('playerMovement', playerData);
       }
 
       // save old position data
       this.player.oldPosition = {
-        x, y, flipX,
+        id,
+        x,
+        y,
+        flipX,
+        playerAttacking,
+        currentDirection,
       };
     }
   }
@@ -235,6 +263,7 @@ export default class GameScene extends Phaser.Scene {
 
     // create an other players group
     this.otherPlayers = this.physics.add.group();
+    this.otherPlayers.runChildUpdate = true;
   }
 
   spawnChest(chestObject: ChestModel) {

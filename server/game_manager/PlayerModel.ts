@@ -1,9 +1,11 @@
+import { Direction } from '../utils/types';
+
 export default class PlayerModel {
   health: number;
 
   maxHealth: number;
 
-  gold: number;
+  gold: number = 0;
 
   id: string;
 
@@ -13,15 +15,17 @@ export default class PlayerModel {
 
   x: number;
 
-  flipX: boolean;
+  flipX: boolean = false;
+
+  attacking: boolean = false;
+
+  currentDirection: Direction = Direction.LEFT;
 
   constructor(id: string, spawnLocations: [number, number][]) {
     this.health = 10;
     this.maxHealth = 10;
-    this.gold = 0;
     this.id = id;
     this.spawnLocations = spawnLocations;
-    this.flipX = true;
 
     const location = this.spawnLocations[Math.floor(Math.random() * this.spawnLocations.length)];
     [this.x, this.y] = location;

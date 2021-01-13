@@ -17,6 +17,8 @@ export default class PlayerModel {
 
   flipX: boolean;
 
+  playerAttacking: boolean;
+
   constructor(spawnLocations: [number, number][]) {
     this.health = 10;
     this.maxHealth = 10;
