@@ -47,10 +47,10 @@ export default class GameManager {
 
   setupEventListeners() {
     this.io.on('connection', (socket: socketio.Socket) => {
-      console.log(`${socket.id} connected.`);
+      // console.log(`${socket.id} connected.`);
       // player disconnected
       socket.on('disconnect', () => {
-        console.log(`${socket.id} disconnected.`);
+        // console.log(`${socket.id} disconnected.`);
         // delete user data from server
         this.players.delete(socket.id);
 
@@ -59,11 +59,11 @@ export default class GameManager {
       });
 
       socket.on('newPlayer', async () => {
-        console.log(`${socket.id} newPlayer.`);
+        // console.log(`${socket.id} newPlayer.`);
         // create a new player
         this.spawnPlayer(socket.id);
 
-        console.log(`${socket.id} emiting initial data.`);
+        // console.log(`${socket.id} emiting initial data.`);
 
         // send the players object to new player
         socket.emit('currentPlayers', toObject(this.players));
@@ -76,7 +76,7 @@ export default class GameManager {
 
         // inform other players of the new player
         socket.broadcast.emit('spawnPlayer', this.players.get(socket.id));
-        console.log(`${socket.id} finished emiting initial data.`);
+        // console.log(`${socket.id} finished emiting initial data.`);
       });
 
       socket.on('playerMovement', (playerData: PlayerData) => {
@@ -102,6 +102,6 @@ export default class GameManager {
   spawnPlayer(id: string) {
     const player = new PlayerModel(id, this.playerLocations);
     this.players.set(player.id, player);
-    console.log(`${id} Player Spawned.`);
+    // console.log(`${id} Player Spawned.`);
   }
 }

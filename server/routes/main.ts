@@ -43,11 +43,11 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
         };
 
         if (!jwtRefreshSecret) {
-          console.log('JWT_REFRESH_SECRET not defined');
+          console.error('JWT_REFRESH_SECRET not defined');
           process.exit(1);
         }
         if (!jwtSecret) {
-          console.log('JWT_SECRET not defined');
+          console.error('JWT_SECRET not defined');
           process.exit(1);
         }
         const token = jwt.sign({ user: body }, jwtSecret, { expiresIn: 300 });
@@ -76,7 +76,7 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
         });
       });
     } catch (err) {
-      console.log(err);
+      console.error(err);
       return next(err);
     }
   })(req, res, next);
@@ -108,7 +108,7 @@ router.post('/token', (req: Request, res: Response) => {
       name: tokenList[refreshJwt].name,
     };
     if (!jwtSecret) {
-      console.log('JWT_SECRET not defined');
+      console.error('JWT_SECRET not defined');
       process.exit(1);
     }
     const token = jwt.sign({ user: body }, jwtSecret, { expiresIn: 300 });

@@ -4,7 +4,7 @@ import 'dotenv/config';
 // Set port
 export const port = process.env.PORT;
 if (!port) {
-  console.log('PORT not found');
+  console.error('PORT not found');
   process.exit(1);
 }
 

@@ -44,7 +44,7 @@ passport.use('login', new localStrategy.Strategy({
 }));
 
 if (!jwtSecret) {
-  console.log('JWT_SECRET not defined');
+  console.error('JWT_SECRET not defined');
   process.exit(1);
 }
 
