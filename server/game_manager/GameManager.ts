@@ -1,9 +1,20 @@
 import socketio from 'socket.io';
 import PlayerModel from './PlayerModel';
 import { PlayerData } from '../utils/types';
+import * as levelData from '../public/assets/level/large_level.json';
 
 export function toObject(map: Map<string, any>): Record<string, any> {
   return Array.from(map).reduce((obj, [key, value]) => (Object.assign(obj, { [key]: value })), {});
+}
+
+export function getTiledProperty(obj: any, propertyName: string) {
+  for (let i = 0; i < obj.properties.length; i += 1) {
+    const property = obj.properties[i];
+    if (property.name === propertyName) {
+      return property.value;
+    }
+  }
+  return null;
 }
 
 export default class GameManager {
@@ -30,7 +41,7 @@ export default class GameManager {
     this.monsters = new Map();
     this.players = new Map();
 
-    this.playerLocations = [[50, 50], [100, 100]];
+    this.playerLocations = [];
     this.chestLocations = new Map();
     this.monsterLocations = new Map();
   }
@@ -41,8 +52,38 @@ export default class GameManager {
     this.setupSpawners();
   }
 
-  // eslint-disable-next-line
   parseMapData() {
+    levelData.layers.forEach((layer: LayerData) => {
+      if (layer.name === 'player_locations') {
+        if (layer.objects) {
+          layer.objects.forEach((obj: LayerObject) => {
+            this.playerLocations.push([obj.x, obj.y]);
+          });
+        }
+      } else if (layer.name === 'monster_locations') {
+        if (layer.objects) {
+          layer.objects.forEach((obj: LayerObject) => {
+            const spawner = getTiledProperty(obj, 'spawner');
+            if (obj.properties) {
+              const location = this.monsterLocations.get(spawner);
+              if (location) location.push([obj.x, obj.y]);
+              else this.monsterLocations.set(spawner, [[obj.x, obj.y]]);
+            }
+          });
+        }
+      } else if (layer.name === 'chest_locations') {
+        if (layer.objects) {
+          layer.objects.forEach((obj: LayerObject) => {
+            const spawner = getTiledProperty(obj, 'spawner');
+            if (obj.properties) {
+              const location = this.chestLocations.get(spawner);
+              if (location) location.push([obj.x, obj.y]);
+              else this.chestLocations.set(spawner, [[obj.x, obj.y]]);
+            }
+          });
+        }
+      }
+    });
   }
 
   setupEventListeners() {
