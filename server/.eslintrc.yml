@@ -23,7 +23,11 @@ settings:
 rules:
   no-shadow: off
   '@typescript-eslint/no-shadow': off
-  # no-console: off
+  no-console:
+    - error
+    - allow:
+      - warn
+      - error
   import/extensions:
     - error
     - ignorePackages

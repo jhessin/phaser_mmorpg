@@ -48,14 +48,14 @@ if (mongoUserName && mongoPassword) {
 }
 
 if (!mongoConnectionUrl) {
-  console.log('MONGO_CONNECTION_URL is not found!');
+  console.error('MONGO_CONNECTION_URL is not found!');
   process.exit(1);
 }
 
 mongoose.connect(mongoConnectionUrl, mongoConfig);
 
 mongoose.connection.on('error', (err: Error) => {
-  console.log(err);
+  console.error(err);
   process.exit(1);
 });
 
@@ -65,7 +65,6 @@ app.use(bodyParser.urlencoded({ extended: false }));
 // parse json objects
 app.use(bodyParser.json());
 app.use(cookieParser());
-console.log(`corsOrigin = ${corsOrigin}`);
 
 app.get('/profile.html', passport.authenticate('jwt', { session: false }),
   (_req: Request, res: Response) => res.status(200).sendFile('profile.html', { root: './public' }));
@@ -100,9 +99,15 @@ app.use((
   res.status(err.status || 500).json({ error: err.message, status: 500 });
 });
 
+// TODO: Check to ensure this is only run once
+let runOnce = false;
 mongoose.connection.on('connected', () => {
+  if (runOnce) return;
+  runOnce = true;
+  // eslint-disable-next-line no-console
   console.log('connected to mongo');
   server.listen(port, () => {
+    // eslint-disable-next-line no-console
     console.log(`server running on port: ${port}`);
   });
 });
