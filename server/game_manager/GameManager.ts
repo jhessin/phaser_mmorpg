@@ -7,7 +7,8 @@ export function toObject(map: Map<string, any>): Record<string, any> {
   return Array.from(map).reduce((obj, [key, value]) => (Object.assign(obj, { [key]: value })), {});
 }
 
-export function getTiledProperty(obj: any, propertyName: string) {
+export function getTiledProperty(obj: LayerObject, propertyName: string) {
+  if (!obj.properties) return null;
   for (let i = 0; i < obj.properties.length; i += 1) {
     const property = obj.properties[i];
     if (property.name === propertyName) {
@@ -64,7 +65,7 @@ export default class GameManager {
         if (layer.objects) {
           layer.objects.forEach((obj: LayerObject) => {
             const spawner = getTiledProperty(obj, 'spawner');
-            if (obj.properties) {
+            if (obj.properties && spawner) {
               const location = this.monsterLocations.get(spawner);
               if (location) location.push([obj.x, obj.y]);
               else this.monsterLocations.set(spawner, [[obj.x, obj.y]]);
@@ -75,7 +76,7 @@ export default class GameManager {
         if (layer.objects) {
           layer.objects.forEach((obj: LayerObject) => {
             const spawner = getTiledProperty(obj, 'spawner');
-            if (obj.properties) {
+            if (obj.properties && spawner) {
               const location = this.chestLocations.get(spawner);
               if (location) location.push([obj.x, obj.y]);
               else this.chestLocations.set(spawner, [[obj.x, obj.y]]);
