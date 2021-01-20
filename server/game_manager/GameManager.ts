@@ -1,7 +1,11 @@
 import socketio from 'socket.io';
-import PlayerModel from './PlayerModel';
-import { PlayerData } from '../utils/types';
 import * as levelData from '../public/assets/level/large_level.json';
+import { PlayerData } from '../utils/types';
+import ChestModel from './ChestModel';
+import MonsterModel from './MonsterModel';
+import PlayerModel from './PlayerModel';
+import Spawner from './Spawner';
+import { SpawnerType } from './utils';
 
 export function toObject(map: Map<string, any>): Record<string, any> {
   return Array.from(map).reduce((obj, [key, value]) => (Object.assign(obj, { [key]: value })), {});
@@ -137,13 +141,71 @@ export default class GameManager {
     });
   }
 
-  // eslint-disable-next-line
   setupSpawners() {
+    const config = {
+      spawnInterval: 3000,
+      limit: 3,
+      spawnerType: SpawnerType.CHEST,
+      id: '',
+    };
+    let spawner;
+
+    // create chest spawners
+    Array.from(this.chestLocations.keys()).forEach((key) => {
+      config.id = `chest-${key}`;
+
+      spawner = new Spawner(
+        config,
+        this.chestLocations.get(key),
+        this.addChest.bind(this),
+        this.deleteChest.bind(this),
+      );
+      this.spawners.set(spawner.id, spawner);
+    });
+
+    // create monster spawners
+    Array.from(this.monsterLocations.keys()).forEach((key) => {
+      config.id = `monster-${key}`;
+      config.spawnerType = SpawnerType.MONSTER;
+
+      spawner = new Spawner(
+        config,
+        this.monsterLocations.get(key),
+        this.addMonster.bind(this),
+        this.deleteMonster.bind(this),
+        this.moveMonsters.bind(this),
+      );
+      this.spawners.set(spawner.id, spawner);
+    });
   }
 
   spawnPlayer(id: string) {
     const player = new PlayerModel(id, this.playerLocations);
     this.players.set(player.id, player);
     // console.log(`${id} Player Spawned.`);
+  }
+
+  addChest(chestId: string, chest: ChestModel) {
+    this.chests.set(chestId, chest);
+    this.io.emit('chestSpawned', chest);
+  }
+
+  deleteChest(chestId: string) {
+    this.chests.delete(chestId);
+    this.io.emit('chestRemoved', chestId);
+  }
+
+  addMonster(monsterId: string, monster: MonsterModel) {
+    this.monsters.set(monsterId, monster);
+    this.io.emit('monsterSpawned', monster);
+  }
+
+  deleteMonster(monsterId: string) {
+    this.monsters.delete(monsterId);
+    this.io.emit('monsterRemoved', monsterId);
+  }
+
+  moveMonsters() {
+    this.io.emit('monsterMovement', this.monsters);
   }
 }

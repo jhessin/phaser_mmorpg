@@ -24,7 +24,7 @@ rules:
   no-shadow: off
   '@typescript-eslint/no-shadow': off
   no-console:
-    - error
+    - warn
     - allow:
       - warn
       - error
