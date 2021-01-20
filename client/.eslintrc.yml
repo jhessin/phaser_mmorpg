@@ -11,6 +11,7 @@ parserOptions:
 plugins:
   - '@typescript-eslint'
 rules:
+  'import/no-cycle': off
   no-console: warn
   no-underscore-dangle:
     - error

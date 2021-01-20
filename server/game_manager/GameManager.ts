@@ -101,7 +101,7 @@ export default class GameManager {
         this.players.delete(socket.id);
 
         // emit a message to all players to remove this player
-        this.io.emit('disconnectPlayer', socket.id);
+        socket.broadcast.emit('disconnectPlayer', socket.id);
       });
 
       socket.on('newPlayer', async () => {
@@ -136,6 +136,21 @@ export default class GameManager {
 
           // emit a message to other players about the player that moved
           socket.broadcast.emit('playerMoved', playerData);
+        }
+      });
+
+      socket.on('pickUpChest', (chestId: string) => {
+        // update the spawner
+        if (this.chests.has(chestId)) {
+          const { gold } = this.chests.get(chestId);
+
+          // updating the players gold
+          const player = this.players.get(socket.id);
+          player.updateGold(gold);
+          socket.emit('updateScore', player.gold);
+
+          // removing the chest
+          this.spawners.get(this.chests.get(chestId).spawnerId).removeObject(chestId);
         }
       });
     });
