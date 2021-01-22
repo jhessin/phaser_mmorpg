@@ -153,6 +153,49 @@ export default class GameManager {
           this.spawners.get(this.chests.get(chestId).spawnerId).removeObject(chestId);
         }
       });
+
+      socket.on('monsterAttacked', (monsterId: string) => {
+        // update the spawner
+        if (this.monsters.has(monsterId)) {
+          const { gold, attack } = this.monsters.get(monsterId);
+
+          // subtract health monster model
+          this.monsters.get(monsterId).loseHealth();
+
+          // check the monsters health, and if dead remove that object
+          if (this.monsters.get(monsterId).health <= 0) {
+            // updating the players gold
+            this.players.get(socket.id).updateGold(gold);
+            socket.emit('updateScore', this.players.get(socket.id).gold);
+
+            // removing the monster
+            this.spawners.get(this.monsters.get(monsterId).spawnerId).removeObject(monsterId);
+            this.io.emit('monsterRemoved', monsterId);
+
+            // add bonus health to the player
+            this.players.get(socket.id).updateHealth(2);
+            this.io.emit('updatePlayerHealth', socket.id, this.players.get(socket.id).health);
+          } else {
+            // update the players health
+            this.players.get(socket.id).updateHealth(-attack);
+            this.io.emit('updatePlayerHealth', socket.id, this.players.get(socket.id).health);
+
+            // update the monsters health
+            this.io.emit('updateMonsterHealth', monsterId, this.monsters.get(monsterId).health);
+
+            // check the player's health, if below 0 have the player respawn
+            if (this.players.get(socket.id).health <= 0) {
+              // update the gold the player has
+              this.players.get(socket.id).updateGold(-this.players.get(socket.id).gold / 2);
+              socket.emit('updateScore', this.players.get(socket.id).gold);
+
+              // respawn the player
+              this.players.get(socket.id).respawn();
+              this.io.emit('respawnPlayer', this.players.get(socket.id));
+            }
+          }
+        }
+      });
     });
   }
 
@@ -166,12 +209,12 @@ export default class GameManager {
     let spawner;
 
     // create chest spawners
-    Array.from(this.chestLocations.keys()).forEach((key) => {
+    this.chestLocations.forEach((locations: [number, number][], key: string) => {
       config.id = `chest-${key}`;
 
       spawner = new Spawner(
         config,
-        this.chestLocations.get(key),
+        locations,
         this.addChest.bind(this),
         this.deleteChest.bind(this),
       );
@@ -179,13 +222,13 @@ export default class GameManager {
     });
 
     // create monster spawners
-    Array.from(this.monsterLocations.keys()).forEach((key) => {
+    this.monsterLocations.forEach((locations: [number, number][], key: string) => {
       config.id = `monster-${key}`;
       config.spawnerType = SpawnerType.MONSTER;
 
       spawner = new Spawner(
         config,
-        this.monsterLocations.get(key),
+        locations,
         this.addMonster.bind(this),
         this.deleteMonster.bind(this),
         this.moveMonsters.bind(this),
@@ -221,6 +264,9 @@ export default class GameManager {
   }
 
   moveMonsters() {
-    this.io.emit('monsterMovement', this.monsters);
+    this.monsters.forEach((monster: MonsterModel) => {
+      monster.move();
+    });
+    this.io.emit('monsterMovement', toObject(this.monsters));
   }
 }
