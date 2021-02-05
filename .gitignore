@@ -42,9 +42,6 @@ bower_components
 # Compiled binary addons (https://nodejs.org/api/addons.html)
 build/Release
 
-# Compiled client code
-public/
-
 # Dependency directories
 node_modules/
 jspm_packages/
@@ -60,6 +57,9 @@ typings/
 
 # Optional eslint cache
 .eslintcache
+
+# Optional stylelint cache
+.stylelintcache
 
 # Microbundle cache
 .rpt2_cache/

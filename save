@@ -1,5 +1,0 @@
-#!/usr/bin/env zsh
-
-git add -A
-GIT_EDITOR="atom --wait" git commit
-git push

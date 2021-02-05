@@ -1,55 +1,37 @@
 /* eslint import/no-extraneous-dependencies: "off" */
 // import webpack
-const webpack = require('webpack');
+import webpack from 'webpack';
+import 'webpack-dev-server';
 // Node.js module used to manipulate file paths
-const path = require('path');
+import path from 'path';
 // generate an HTML file for your application by injecting automatically all
 // your generated bundles.
-const HtmlWebpackPlugin = require('html-webpack-plugin');
+import HtmlWebpackPlugin from 'html-webpack-plugin';
 // This plugin will remove all files inside webpack's output.path directory,
 // as well as all unused webpack assets after every successful rebuild.
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+import { CleanWebpackPlugin } from 'clean-webpack-plugin';
+import CopyPlugin from 'copy-webpack-plugin';
 
-module.exports = {
-  // the main entry point
-  entry: './src/game.ts',
-
-  // The output path
-  output: {
-    path: path.resolve(__dirname, '../dist'),
-  },
-
+const config: webpack.Configuration = {
   // enable webpack's built-in optimizations
   // that correspond to development
   mode: 'development',
-  // Each module is executed with eval() and a SourceMap is added as a DataUrl
-  // to the eval(). Initially it is slow, but it provides fast rebuild speed
-  // and yields real files
-  devtool: 'eval-source-map',
-
+  // the main entry point
+  entry: './client/index.ts',
+  devtool: 'inline-source-map',
+  // Dev Server settings
   devServer: {
     contentBase: path.resolve(__dirname, 'dist'),
     writeToDisk: true,
-    port: 8000,
     open: true,
   },
+  // The output path
+  output: {
+    path: path.resolve(__dirname, 'dist'),
+    filename: '[name].js',
+    publicPath: '/',
+  },
 
-  plugins: [
-    new CleanWebpackPlugin({
-      // specify the path where this plugin will delete the files on each
-      // rebuild
-      root: path.resolve(__dirname, './dist'),
-    }),
-    // config webpack to handle renderer swapping
-    new webpack.DefinePlugin({
-      CANVAS_RENDERER: JSON.stringify(true),
-      WEBGL_RENDERER: JSON.stringify(true),
-    }),
-    new HtmlWebpackPlugin({
-      // where your html template is located.
-      template: './index.html',
-    }),
-  ],
   module: {
     rules: [
       {
@@ -77,9 +59,37 @@ module.exports = {
         // you.
         use: 'file-loader',
       },
+      {
+        // Loads the javascript into html template provided.
+        // Entry point is set below in HtmlWebpackPlugin in Plugins
+        test: /\.html$/,
+        use: [{ loader: 'html-loader' }],
+      },
     ],
   },
+  plugins: [
+    new CleanWebpackPlugin(),
+    new CopyPlugin({
+      patterns: [
+        {
+          from: 'assets/**/*',
+        },
+      ],
+    }),
+    // config webpack to handle renderer swapping
+    new webpack.DefinePlugin({
+      CANVAS_RENDERER: JSON.stringify(true),
+      WEBGL_RENDERER: JSON.stringify(true),
+    }),
+    new HtmlWebpackPlugin({
+      // where your html template is located.
+      title: 'Phaser Game',
+      // template: 'index.html',
+    }),
+  ],
   resolve: {
     extensions: ['.ts', '.tsx', '.js'],
   },
 };
+
+export default config;

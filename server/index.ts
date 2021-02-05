@@ -1,36 +1,23 @@
-import express, {
-  Request,
-  Response,
-} from 'express';
+import express from 'express';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import mongoose from 'mongoose';
-import passport from 'passport';
+import webpack from 'webpack';
+import webpackDevMiddleware from 'webpack-dev-middleware';
+import webpackHotMiddleware from 'webpack-hot-middleware';
 
+import webpackConfig from '../webpack.config';
 import {
-  port, mongoConnectionUrl, mongoUserName, mongoPassword, corsOrigin,
+  port, mongoConnectionUrl, mongoUserName, mongoPassword,
 } from './env';
 import HttpException from './HttpException';
-import routes from './routes/main';
-import passwordRoutes from './routes/password';
-import secureRoutes from './routes/secure';
-import GameManager from './game_manager/GameManager';
-
-// require passport auth
-import './auth/auth';
+import GameManager from './game_manager';
 
 const app = express();
 const server = require('http').Server(app);
-const io = require('socket.io')(server, {
-  cors: {
-    credentials: true,
-    origin: corsOrigin,
-    methods: ['GET', 'POST'],
-  },
-});
+const io = require('socket.io')(server);
 
 const game = new GameManager(io);
-
 game.setup();
 
 // setup mongo connection
@@ -38,7 +25,7 @@ const mongoConfig: mongoose.ConnectOptions = {
   useNewUrlParser: true,
   useCreateIndex: true,
   useUnifiedTopology: true,
-  useFindAndModify: false,
+  useFindAndModify: true,
 };
 
 if (mongoUserName && mongoPassword) {
@@ -59,33 +46,36 @@ mongoose.connection.on('error', (err: Error) => {
   process.exit(1);
 });
 
-// update express settings
+// Add HMR plugin
+webpackConfig.plugins.push(new webpack.HotModuleReplacementPlugin());
+
+const compiler = webpack(webpackConfig);
+
+// Enable 'webpack-dev-middleware'
+if (typeof webpackConfig.output.publicPath === 'string') {
+  app.use(webpackDevMiddleware(compiler, {
+    publicPath: webpackConfig.output.publicPath,
+  }));
+} else {
+  app.use(webpackDevMiddleware(compiler, {
+    publicPath: '/',
+  }));
+}
+
+// Enable 'webpack-hot-middleware'
+app.use(webpackHotMiddleware(compiler));
+
+// API Goes here
 // parse application/x-www-form-urlencoded data
 app.use(bodyParser.urlencoded({ extended: false }));
 // parse json objects
 app.use(bodyParser.json());
 app.use(cookieParser());
 
-app.get('/profile.html', passport.authenticate('jwt', { session: false }),
-  (_req: Request, res: Response) => res.status(200).sendFile('profile.html', { root: './public' }));
-
-// serve public directory as static
-app.use(express.static(`${__dirname}/public`));
-
-// serve the index page as default
-app.get('/', (_req: Request, res: Response) => {
-  res.send(`${__dirname}/index.html`);
-});
-
-// setup routes
-app.use('/', routes);
-app.use('/', passwordRoutes);
-app.use('/', passport.authenticate('jwt', { session: false }), secureRoutes);
-
 // catch all other routes
-app.use((_req: Request, res: Response) => {
+app.use((_req, res) => {
   res.status(404).json({
-    message: '404 - Not Found',
+    message: '404 - Not Found)',
     status: 404,
   });
 });
@@ -93,21 +83,25 @@ app.use((_req: Request, res: Response) => {
 // handle errors
 app.use((
   err: HttpException,
-  _req: Request,
-  res: Response,
+  _req: express.Request,
+  res: express.Response,
 ) => {
-  res.status(err.status || 500).json({ error: err.message, status: 500 });
+  res.status(err.status || 500).json({
+    error: err.message,
+    status: 500,
+  });
 });
+// -------------
 
-// TODO: Check to ensure this is only run once
 let runOnce = false;
+
 mongoose.connection.on('connected', () => {
   if (runOnce) return;
   runOnce = true;
   // eslint-disable-next-line no-console
   console.log('connected to mongo');
   server.listen(port, () => {
-    // eslint-disable-next-line no-console
-    console.log(`server running on port: ${port}`);
+  // eslint-disable-next-line no-console
+    console.log(`Server started on port: ${port}`);
   });
 });

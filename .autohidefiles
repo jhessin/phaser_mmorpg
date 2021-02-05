@@ -1,4 +1,3 @@
-/client
-/server
-/.git
-/.autohidefiles
+.git
+node_modules
+dist
