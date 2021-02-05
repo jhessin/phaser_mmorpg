@@ -6,7 +6,7 @@ export default class Player extends Phaser.Physics.Arcade.Image {
     // enable physics
     this.scene.physics.world.enable(this);
     // set immovable if another object collides with our player
-    this.setImmovable(true);
+    this.setPushable(true);
     // scale our player
     this.setScale(2);
     // add the player to our existing scene

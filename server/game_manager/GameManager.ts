@@ -235,7 +235,7 @@ export default class GameManager {
     const config = {
       spawnInterval: 3000,
       limit: 3,
-      spawnerType: SpawnerType.CHEST,
+      spawnerType: SpawnerType.MONSTER,
       id: '',
     };
     let spawner;
@@ -247,8 +247,11 @@ export default class GameManager {
       spawner = new Spawner(
         config,
         locations,
-        this.addChest.bind(this),
-        this.deleteChest.bind(this),
+        this.addMonster.bind(this),
+        this.deleteMonster.bind(this),
+        this.moveMonsters.bind(this),
+        // this.addChest.bind(this),
+        // this.deleteChest.bind(this),
       );
       this.spawners.set(spawner.id, spawner);
     });

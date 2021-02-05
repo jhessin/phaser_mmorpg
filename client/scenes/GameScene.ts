@@ -229,7 +229,7 @@ export default class GameScene extends Phaser.Scene {
           playerAttacking,
           currentDirection,
         };
-        console.log(`Player Position: (${x}, ${y})`);
+        // console.log(`Player Position: (${x}, ${y})`);
         this.socket.emit('playerMovement', playerData);
       }
 

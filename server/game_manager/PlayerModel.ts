@@ -33,6 +33,7 @@ export default class PlayerModel {
 
   updateGold(gold: number) {
     this.gold += gold;
+    this.gold = Math.floor(this.gold);
   }
 
   updateHealth(health: number) {
