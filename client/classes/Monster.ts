@@ -27,7 +27,7 @@ export default class Monster extends Phaser.Physics.Arcade.Image {
     // collide with world bounds
     this.setCollideWorldBounds(true);
     // set immovable if another object collides with our monster
-    this.setPushable(true);
+    this.setImmovable(true);
     // scale our monster
     this.setScale(2);
     // collide with world bounds

@@ -61,18 +61,6 @@ export default class GameScene extends Phaser.Scene {
       });
     });
 
-    // remove disconnected players
-    this.socket.on('disconnectPlayer', (id: string) => {
-      // console.log('Player disconnected');
-      // console.log(id);
-      this.otherPlayers.getChildren().forEach((player: PlayerContainer) => {
-        if (player.id === id) {
-          player.healthBar.clear();
-          this.otherPlayers.remove(player, true, true);
-        }
-      });
-    });
-
     // spawn monster game objects
     this.socket.on('currentMonsters', (monsters: Record<string, MonsterModel>) => {
       // console.log('Current Monsters');
@@ -189,6 +177,15 @@ export default class GameScene extends Phaser.Scene {
           }
         });
       }
+    });
+
+    // remove disconnected players
+    this.socket.on('disconnectPlayer', (playerId: string) => {
+      this.otherPlayers.getChildren().forEach((player: PlayerContainer) => {
+        if (playerId === player.id) {
+          player.cleanUp();
+        }
+      });
     });
   }
 
@@ -346,6 +343,34 @@ export default class GameScene extends Phaser.Scene {
     this.physics.add.collider(this.monsters, this.gameMap.blockedLayer);
     // check for overlaps between the player's weapon and monster game objects
     this.physics.add.overlap(this.player.weapon, this.monsters, this.enemyOverlap, null, this);
+    // check for collisions between players
+    this.physics.add.collider(
+      this.player,
+      this.otherPlayers,
+      (player: PlayerContainer, other: PlayerContainer) => {
+        player.body.setVelocity(0);
+        other.body.setVelocity(0);
+      },
+    );
+    this.physics.add.overlap(
+      this.player.weapon,
+      this.otherPlayers,
+      this.weaponOverlapEnemy,
+      null,
+      this,
+    );
+  }
+
+  pvpCollider(_player: PlayerContainer, otherPlayer: PlayerContainer) {
+    this.player.body.setVelocity(0);
+    otherPlayer.body.setVelocity(0);
+  }
+
+  weaponOverlapEnemy(_weapon: Phaser.Physics.Arcade.Image, otherPlayer: PlayerContainer) {
+    if (this.player.playerAttacking && !this.player.swordHit) {
+      this.player.swordHit = true;
+      this.socket.emit('attackedPlayer', otherPlayer.id);
+    }
   }
 
   enemyOverlap(_: any, enemy: Monster) {

@@ -21,13 +21,17 @@ export default class PlayerModel {
 
   currentDirection: Direction = Direction.LEFT;
 
-  constructor(id: string, spawnLocations: [number, number][]) {
+  constructor(
+    id: string,
+    spawnLocations: [number, number][],
+    players: Map<string, PlayerModel>,
+  ) {
     this.health = 10;
     this.maxHealth = 10;
     this.id = id;
     this.spawnLocations = spawnLocations;
 
-    const location = this.spawnLocations[Math.floor(Math.random() * this.spawnLocations.length)];
+    const location = this.generateLocation(players);
     [this.x, this.y] = location;
   }
 
@@ -41,9 +45,20 @@ export default class PlayerModel {
     if (this.health > 10) this.health = 10;
   }
 
-  respawn() {
+  respawn(players: Map<string, PlayerModel>) {
     this.health = this.maxHealth;
-    const location = this.spawnLocations[Math.floor(Math.random() * this.spawnLocations.length)];
+    const location = this.generateLocation(players);
     [this.x, this.y] = location;
+  }
+
+  generateLocation(players: Map<string, PlayerModel>): [number, number] {
+    const location = this.spawnLocations[Math.floor(Math.random() * this.spawnLocations.length)];
+    const invalidLocation = Array.from(
+      players.keys(),
+    ).some((key) => (
+      players.get(key).x === location[0]
+      && players.get(key).y === location[1]));
+    if (invalidLocation) return this.generateLocation(players);
+    return location;
   }
 }

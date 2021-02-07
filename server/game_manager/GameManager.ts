@@ -55,11 +55,11 @@ type LayerData = {
 };
 
 export default class GameManager {
-  spawners: Map<string, any>;
+  spawners: Map<string, Spawner>;
 
-  chests: Map<string, any>;
+  chests: Map<string, ChestModel>;
 
-  monsters: Map<string, any>;
+  monsters: Map<string, MonsterModel>;
 
   players: Map<string, PlayerModel>;
 
@@ -214,17 +214,50 @@ export default class GameManager {
 
             // update the monsters health
             this.io.emit('updateMonsterHealth', monsterId, this.monsters.get(monsterId).health);
+          }
 
-            // check the player's health, if below 0 have the player respawn
-            if (this.players.get(socket.id).health <= 0) {
-              // update the gold the player has
-              this.players.get(socket.id).updateGold(-this.players.get(socket.id).gold / 2);
-              socket.emit('updateScore', this.players.get(socket.id).gold);
+          // check the player's health, if below 0 have the player respawn
+          if (this.players.get(socket.id).health <= 0) {
+            // update the gold the player has
+            this.players.get(socket.id).updateGold(-this.players.get(socket.id).gold / 2);
+            socket.emit('updateScore', this.players.get(socket.id).gold);
 
-              // respawn the player
-              this.players.get(socket.id).respawn();
-              this.io.emit('respawnPlayer', this.players.get(socket.id));
-            }
+            // respawn the player
+            this.players.get(socket.id).respawn(this.players);
+            this.io.emit('respawnPlayer', this.players.get(socket.id));
+          }
+        }
+      });
+
+      socket.on('attackedPlayer', (enemyId: string) => {
+        const enemy = this.players.get(enemyId);
+        if (enemy) {
+          // get required info from attacked player
+          const { gold } = enemy;
+
+          // subtract health from attacked player
+          enemy.updateHealth(-1);
+
+          // check if enemy is dead
+          if (enemy.health <= 0) {
+            this.players.get(socket.id).updateGold(gold);
+
+            // respawn dead player
+            enemy.respawn(this.players);
+            this.io.emit('respawnPlayer', enemy);
+
+            // send update gold message to player
+            socket.emit('updateScore', this.players.get(socket.id).gold);
+
+            // reset attacked players gold
+            enemy.updateGold(-gold);
+            this.io.to(enemyId).emit('updateScore', enemy.gold);
+
+            // add bonus health to player
+            this.players.get(socket.id).updateHealth(2);
+            this.io.emit('updatePlayerHealth', socket.id, this.players.get(socket.id).health);
+          } else {
+            this.io.emit('updatePlayerHealth', enemyId, enemy.health);
           }
         }
       });
@@ -273,7 +306,7 @@ export default class GameManager {
   }
 
   spawnPlayer(id: string) {
-    const player = new PlayerModel(id, this.playerLocations);
+    const player = new PlayerModel(id, this.playerLocations, this.players);
     this.players.set(player.id, player);
     // console.log(`${id} Player Spawned.`);
   }
