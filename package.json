@@ -7,7 +7,7 @@
   "repository": "git@github.com:jhessin/phaser_mmorpg2.git",
   "scripts": {
     "build": "tsc",
-    "dev": "nodemon",
+    "dev": "nodemon -w server",
     "lint": "eslint --fix .",
     "start": "ts-node server/index.ts",
     "mongo:up": "docker-compose up -d",
