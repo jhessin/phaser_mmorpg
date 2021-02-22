@@ -1,7 +1,10 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import mongoose from 'mongoose';
+import passport from 'passport';
+
+// Webpack imports
 import webpack from 'webpack';
 import webpackDevMiddleware from 'webpack-dev-middleware';
 import webpackHotMiddleware from 'webpack-hot-middleware';
@@ -11,7 +14,13 @@ import {
   port, mongoConnectionUrl, mongoUserName, mongoPassword,
 } from './env';
 import HttpException from './HttpException';
+import routes, {
+  passwordRoutes, secureRoutes,
+} from './routes';
 import GameManager from './game_manager';
+
+// require passport auth
+import './auth/auth';
 
 const app = express();
 const server = require('http').Server(app);
@@ -71,6 +80,16 @@ app.use(bodyParser.urlencoded({ extended: false }));
 // parse json objects
 app.use(bodyParser.json());
 app.use(cookieParser());
+
+app.get('/profile.html', passport.authenticate('jwt', { session: false }),
+  (_req: Request, res: Response) => {
+    res.status(200).sendFile('profile.html', { root: './public' });
+  });
+
+// setup routes
+app.use('/', routes);
+app.use('/', passwordRoutes);
+app.use('/', passport.authenticate('jwt', { session: false }), secureRoutes);
 
 // catch all other routes
 app.use((_req, res) => {
